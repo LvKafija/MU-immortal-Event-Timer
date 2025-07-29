@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MU Immortal - Next Event</title>
+  <title>MU Immortal - Next Events</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,16 +20,19 @@
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 0 12px rgba(0, 255, 255, 0.2);
+      max-width: 400px;
     }
     h1 { color: #00ffff; }
     .time { font-size: 1.2em; margin-top: 10px; }
+    .event-box { margin-top: 20px; }
+    .event-item { margin-bottom: 12px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>MU Immortal - Next Event</h1>
-    <div id="next-event"></div>
+    <h1>MU Immortal - Next Events</h1>
     <div class="time" id="current-time"></div>
+    <div class="event-box" id="next-events"></div>
   </div>
 
   <script>
@@ -68,31 +71,39 @@
       "23:00|Blood Castle"
     ];
 
-    function updateNextEvent() {
+    function updateNextEvents() {
       const now = new Date();
       const currentTime = now.toTimeString().slice(0, 5);
       document.getElementById("current-time").textContent = `Current Time: ${currentTime}`;
 
+      let nextEvents = [];
+
       for (let e of events) {
         let [time, name] = e.split("|");
         if (time >= currentTime) {
-          document.getElementById("next-event").innerHTML = `
-            <h2>Next Event:</h2>
-            <p><strong>${name}</strong> at <strong>${time}</strong></p>
-          `;
-          return;
+          nextEvents.push({ time, name });
         }
       }
-      // If no event found today, return first event for tomorrow
-      let [time, name] = events[0].split("|");
-      document.getElementById("next-event").innerHTML = `
-        <h2>Next Event:</h2>
-        <p><strong>${name}</strong> at <strong>${time}</strong> (next day)</p>
-      `;
+
+      // Wrap around for next day if fewer than 3 found
+      if (nextEvents.length < 3) {
+        for (let e of events) {
+          let [time, name] = e.split("|");
+          nextEvents.push({ time, name });
+          if (nextEvents.length >= 3) break;
+        }
+      }
+
+      const eventBox = document.getElementById("next-events");
+      eventBox.innerHTML = '<h2>Upcoming Events:</h2>' + nextEvents.slice(0, 3).map(ev => `
+        <div class="event-item">
+          <strong>${ev.name}</strong> at <strong>${ev.time}</strong>
+        </div>
+      `).join('');
     }
 
-    updateNextEvent();
-    setInterval(updateNextEvent, 60000);
+    updateNextEvents();
+    setInterval(updateNextEvents, 60000);
   </script>
 </body>
 </html>
