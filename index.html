@@ -73,7 +73,7 @@
     ];
 
     function getTimeDifference(timeStr) {
-      const [h, m] = timeStr.split(":").map(Number);
+      const [h, m] = timeStr.split(":" ).map(Number);
       const now = new Date();
       const eventTime = new Date();
       eventTime.setHours(h, m, 0, 0);
@@ -87,6 +87,15 @@
       return `${hours}h ${mins}m`;
     }
 
+    function eventMatchesToday(eventName) {
+      const day = new Date().toLocaleDateString('en-US', { weekday: 'short' }); // e.g., 'Mon'
+      if (!eventName.includes("(")) return true;
+      const match = eventName.match(/\((.*?)\)/);
+      if (!match) return true;
+      const days = match[1].split("/").map(d => d.trim());
+      return days.includes(day);
+    }
+
     function updateNextEvents() {
       const now = new Date();
       const currentTime = now.toTimeString().slice(0, 5);
@@ -95,18 +104,18 @@
       let nextEvents = [];
       for (let e of events) {
         let [time, name] = e.split("|");
-        if (time >= currentTime) {
-          nextEvents.push({ time, name });
+        if (eventMatchesToday(name)) {
+          const [h, m] = time.split(":" ).map(Number);
+          const eventDate = new Date();
+          eventDate.setHours(h, m, 0, 0);
+          if (eventDate < now) {
+            eventDate.setDate(eventDate.getDate() + 1);
+          }
+          nextEvents.push({ time, name, eventDate });
         }
       }
 
-      if (nextEvents.length < 3) {
-        for (let e of events) {
-          let [time, name] = e.split("|");
-          nextEvents.push({ time, name });
-          if (nextEvents.length >= 3) break;
-        }
-      }
+      nextEvents.sort((a, b) => a.eventDate - b.eventDate);
 
       const eventBox = document.getElementById("next-events");
       eventBox.innerHTML = '<h2>Upcoming Events:</h2>' + nextEvents.slice(0, 3).map(ev => `
