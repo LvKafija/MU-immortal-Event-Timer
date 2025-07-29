@@ -76,7 +76,7 @@
   </div>
 
   <script>
-    const CET_OFFSET = 1; // CET is UTC+1 (without DST)
+    const CET_OFFSET = 1;
 
     const events = [
       "00:00|Devil Square",
@@ -137,13 +137,13 @@
     function getNextWeeklyDate(now, allowedDays, hour, minute) {
       const dayIndices = allowedDays.map(d => dayAbbr.indexOf(d));
       let nextDate = null;
-      let minDiff = 8; // max days + 1
+      let minDiff = 8; 
       for (const dayIndex of dayIndices) {
         let diff = (dayIndex - now.getDay() + 7) % 7;
-        if (diff === 0) { // Today, check if event time is still ahead
+        if (diff === 0) { 
           const eventTimeToday = convertCETtoLocalDate(now, hour, minute);
           if (eventTimeToday <= now) {
-            diff = 7; // Move to next week
+            diff = 7; 
           }
         }
         if (diff < minDiff) {
@@ -176,7 +176,6 @@
         const [hour, minute] = time.split(":").map(Number);
 
         if (match) {
-          // Weekly event
           const allowedDays = match[1].split(/[\/,\s]+/);
           const nextDate = getNextWeeklyDate(now, allowedDays, hour, minute);
           if (nextDate > now) {
@@ -188,7 +187,6 @@
             });
           }
         } else {
-          // Daily event
           let eventDate = convertCETtoLocalDate(now, hour, minute);
           if (eventDate <= now) {
             eventDate.setDate(eventDate.getDate() + 1);
