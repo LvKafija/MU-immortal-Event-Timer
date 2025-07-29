@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MU Immortal - Next Event</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+    .container {
+      background: #1e1e1e;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 255, 255, 0.2);
+    }
+    h1 { color: #00ffff; }
+    .time { font-size: 1.2em; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MU Immortal - Next Event</h1>
+    <div id="next-event"></div>
+    <div class="time" id="current-time"></div>
+  </div>
+
+  <script>
+    const events = [
+      "00:00|Devil Square",
+      "00:00|Minion EXP +30%",
+      "01:00|Blood Castle",
+      "02:00|Devil Square",
+      "03:00|Blood Castle",
+      "04:00|Devil Square",
+      "05:00|Blood Castle",
+      "06:00|Devil Square",
+      "07:00|Blood Castle",
+      "08:00|Devil Square",
+      "09:00|Blood Castle",
+      "10:30|Red Dragon Invasion",
+      "11:00|Devil Square",
+      "11:30|Guild Master Event",
+      "13:00|Blood Castle",
+      "13:30|Red Dragon Invasion",
+      "14:00|Devil Square",
+      "15:00|Blood Castle",
+      "16:00|Devil Square",
+      "16:30|Red Dragon Invasion",
+      "17:00|Blood Castle",
+      "18:00|Devil Square",
+      "19:00|Blood Castle",
+      "19:30|Guild Master Event",
+      "20:00|Devil Square",
+      "20:00|Chaos Castle (Tue)",
+      "20:00|Siege War (Wed/Sat)",
+      "20:30|Crywolf Fortress (Mon)",
+      "21:00|Blood Castle",
+      "21:30|Red Dragon Invasion",
+      "22:00|Devil Square",
+      "23:00|Blood Castle"
+    ];
+
+    function updateNextEvent() {
+      const now = new Date();
+      const currentTime = now.toTimeString().slice(0, 5);
+      document.getElementById("current-time").textContent = `Current Time: ${currentTime}`;
+
+      for (let e of events) {
+        let [time, name] = e.split("|");
+        if (time >= currentTime) {
+          document.getElementById("next-event").innerHTML = `
+            <h2>Next Event:</h2>
+            <p><strong>${name}</strong> at <strong>${time}</strong></p>
+          `;
+          return;
+        }
+      }
+      // If no event found today, return first event for tomorrow
+      let [time, name] = events[0].split("|");
+      document.getElementById("next-event").innerHTML = `
+        <h2>Next Event:</h2>
+        <p><strong>${name}</strong> at <strong>${time}</strong> (next day)</p>
+      `;
+    }
+
+    updateNextEvent();
+    setInterval(updateNextEvent, 60000);
+  </script>
+</body>
+</html>
