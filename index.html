@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MU Immortal - Next Events</title>
+  <title>MU Immortal - Event Timers</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,8 +11,9 @@
       color: #f5f5f5;
       display: flex;
       justify-content: center;
-      align-items: center;
-      height: 100vh;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
       text-align: center;
     }
     .container {
@@ -20,20 +21,51 @@
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 0 12px rgba(0, 255, 255, 0.2);
-      max-width: 400px;
+      max-width: 1000px;
+      width: 100%;
     }
-    h1 { color: #00ffff; }
-    .time { font-size: 1.2em; margin-top: 10px; }
-    .event-box { margin-top: 20px; }
+    h1 { color: #00ffff; margin-bottom: 10px; }
+    .time { font-size: 1.2em; margin-bottom: 20px; }
     .event-item { margin-bottom: 12px; }
     .countdown { color: #ffd700; font-size: 0.9em; }
+    .up-next {
+      background-color: #2a2a2a;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .columns {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      text-align: left;
+    }
+    .column {
+      flex: 1;
+      background: #252525;
+      padding: 15px;
+      border-radius: 10px;
+    }
+    .column h2 {
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>MU Immortal - Next Events</h1>
+    <h1>MU Immortal - Event Timers</h1>
     <div class="time" id="current-time"></div>
-    <div class="event-box" id="next-events"></div>
+    <div id="up-next" class="up-next"></div>
+    <div class="columns">
+      <div class="column">
+        <h2>Daily Events</h2>
+        <div id="daily-events"></div>
+      </div>
+      <div class="column">
+        <h2>Weekly Events</h2>
+        <div id="weekly-events"></div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -52,6 +84,8 @@
       "10:30|Red Dragon Invasion",
       "11:00|Devil Square",
       "11:30|Guild Master Event",
+      "12:00|Cross-server 3v3",
+      "12:10|Frost lord",
       "13:00|Blood Castle",
       "13:30|Red Dragon Invasion",
       "14:00|Devil Square",
@@ -60,6 +94,7 @@
       "16:30|Red Dragon Invasion",
       "17:00|Blood Castle",
       "18:00|Devil Square",
+      "18:30|Frost lord",
       "19:00|Blood Castle",
       "19:30|Guild Master Event",
       "20:00|Devil Square",
@@ -69,65 +104,86 @@
       "21:00|Blood Castle",
       "21:30|Red Dragon Invasion",
       "22:00|Devil Square",
-      "23:00|Blood Castle"
+      "23:00|Blood Castle",
+      "23:30|Cross-server 3v3"
     ];
 
-    function getTimeDifference(timeStr) {
-      const [h, m] = timeStr.split(":" ).map(Number);
+    const dayAbbr = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    function getTimeDifference(eventTime) {
       const now = new Date();
-      const eventTime = new Date();
-      eventTime.setHours(h, m, 0, 0);
-      if (eventTime < now) {
-        eventTime.setDate(eventTime.getDate() + 1);
-      }
-      const diffMs = eventTime - now;
-      const minutes = Math.floor(diffMs / 60000);
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-      return `${hours}h ${mins}m`;
+      let diffMs = eventTime - now;
+      const totalMinutes = Math.floor(diffMs / 60000);
+      const days = Math.floor(totalMinutes / 1440);
+      const hours = Math.floor((totalMinutes % 1440) / 60);
+      const minutes = totalMinutes % 60;
+      return `${days > 0 ? days + 'd ' : ''}${hours}h ${minutes}m`;
     }
 
-    function eventMatchesToday(eventName) {
-      const day = new Date().toLocaleDateString('en-US', { weekday: 'short' }); // e.g., 'Mon'
-      if (!eventName.includes("(")) return true;
-      const match = eventName.match(/\((.*?)\)/);
-      if (!match) return true;
-      const days = match[1].split("/").map(d => d.trim());
-      return days.includes(day);
-    }
-
-    function updateNextEvents() {
+    function updateEvents() {
       const now = new Date();
       const currentTime = now.toTimeString().slice(0, 5);
-      document.getElementById("current-time").textContent = `Current Time: ${currentTime}`;
+      const currentDay = dayAbbr[now.getDay()];
+      document.getElementById("current-time").textContent = `Current Time: ${currentDay} ${currentTime}`;
 
-      let nextEvents = [];
+      const allUpcoming = [];
+
       for (let e of events) {
-        let [time, name] = e.split("|");
-        if (eventMatchesToday(name)) {
-          const [h, m] = time.split(":" ).map(Number);
-          const eventDate = new Date();
-          eventDate.setHours(h, m, 0, 0);
-          if (eventDate < now) {
-            eventDate.setDate(eventDate.getDate() + 1);
+        const [time, name] = e.split("|");
+        const match = name.match(/\(([^)]+)\)/);
+        const [hour, minute] = time.split(":" ).map(Number);
+
+        for (let offset = 0; offset < 7; offset++) {
+          const eventDate = new Date(now);
+          eventDate.setDate(now.getDate() + offset);
+          eventDate.setHours(hour, minute, 0, 0);
+
+          const eventDay = dayAbbr[eventDate.getDay()];
+          if (match) {
+            const days = match[1].split("/");
+            if (!days.includes(eventDay)) continue;
           }
-          nextEvents.push({ time, name, eventDate });
+
+          if (eventDate > now) {
+            allUpcoming.push({
+              name: name.replace(/ \([^)]*\)/, ""),
+              time: time,
+              eventTime: eventDate,
+              isWeekly: !!match
+            });
+            break;
+          }
         }
       }
 
-      nextEvents.sort((a, b) => a.eventDate - b.eventDate);
+      allUpcoming.sort((a, b) => a.eventTime - b.eventTime);
 
-      const eventBox = document.getElementById("next-events");
-      eventBox.innerHTML = '<h2>Upcoming Events:</h2>' + nextEvents.slice(0, 3).map(ev => `
+      const upNext = allUpcoming[0];
+      document.getElementById("up-next").innerHTML = `
+        <h2>Up Next</h2>
+        <div class="event-item">
+          <strong>${upNext.name}</strong> at <strong>${upNext.time}</strong><br />
+          <span class="countdown">Starts in ${getTimeDifference(upNext.eventTime)}</span>
+        </div>`;
+
+      const dailyHTML = allUpcoming.filter(e => !e.isWeekly).map(ev => `
         <div class="event-item">
           <strong>${ev.name}</strong> at <strong>${ev.time}</strong><br />
-          <span class="countdown">Starts in ${getTimeDifference(ev.time)}</span>
-        </div>
-      `).join('');
+          <span class="countdown">Starts in ${getTimeDifference(ev.eventTime)}</span>
+        </div>`).join('');
+
+      const weeklyHTML = allUpcoming.filter(e => e.isWeekly).map(ev => `
+        <div class="event-item">
+          <strong>${ev.name}</strong> at <strong>${ev.time}</strong><br />
+          <span class="countdown">Starts in ${getTimeDifference(ev.eventTime)}</span>
+        </div>`).join('');
+
+      document.getElementById("daily-events").innerHTML = dailyHTML;
+      document.getElementById("weekly-events").innerHTML = weeklyHTML;
     }
 
-    updateNextEvents();
-    setInterval(updateNextEvents, 60000);
+    updateEvents();
+    setInterval(updateEvents, 60000);
   </script>
 </body>
 </html>
