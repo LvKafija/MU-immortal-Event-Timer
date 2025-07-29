@@ -26,6 +26,7 @@
     .time { font-size: 1.2em; margin-top: 10px; }
     .event-box { margin-top: 20px; }
     .event-item { margin-bottom: 12px; }
+    .countdown { color: #ffd700; font-size: 0.9em; }
   </style>
 </head>
 <body>
@@ -71,13 +72,27 @@
       "23:00|Blood Castle"
     ];
 
+    function getTimeDifference(timeStr) {
+      const [h, m] = timeStr.split(":").map(Number);
+      const now = new Date();
+      const eventTime = new Date();
+      eventTime.setHours(h, m, 0, 0);
+      if (eventTime < now) {
+        eventTime.setDate(eventTime.getDate() + 1);
+      }
+      const diffMs = eventTime - now;
+      const minutes = Math.floor(diffMs / 60000);
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return `${hours}h ${mins}m`;
+    }
+
     function updateNextEvents() {
       const now = new Date();
       const currentTime = now.toTimeString().slice(0, 5);
       document.getElementById("current-time").textContent = `Current Time: ${currentTime}`;
 
       let nextEvents = [];
-
       for (let e of events) {
         let [time, name] = e.split("|");
         if (time >= currentTime) {
@@ -85,7 +100,6 @@
         }
       }
 
-      // Wrap around for next day if fewer than 3 found
       if (nextEvents.length < 3) {
         for (let e of events) {
           let [time, name] = e.split("|");
@@ -97,7 +111,8 @@
       const eventBox = document.getElementById("next-events");
       eventBox.innerHTML = '<h2>Upcoming Events:</h2>' + nextEvents.slice(0, 3).map(ev => `
         <div class="event-item">
-          <strong>${ev.name}</strong> at <strong>${ev.time}</strong>
+          <strong>${ev.name}</strong> at <strong>${ev.time}</strong><br />
+          <span class="countdown">Starts in ${getTimeDifference(ev.time)}</span>
         </div>
       `).join('');
     }
