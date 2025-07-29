@@ -130,8 +130,6 @@
     }
 
     function convertCETtoLocalDate(date, hour, minute) {
-      // Event times are CET (UTC+1)
-      // Create a UTC date at CET time by subtracting 1 hour from CET (to get UTC)
       const utcDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hour - CET_OFFSET, minute, 0, 0));
       return new Date(utcDate.getTime());
     }
