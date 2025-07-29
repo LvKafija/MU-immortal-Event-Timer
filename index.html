@@ -45,9 +45,16 @@
       background: #252525;
       padding: 15px;
       border-radius: 10px;
+      max-height: 70vh;
+      overflow-y: auto;
     }
     .column h2 {
       text-align: center;
+    }
+    .original-time {
+      font-size: 0.85em;
+      color: #aaa;
+      margin-left: 8px;
     }
   </style>
 </head>
@@ -69,6 +76,8 @@
   </div>
 
   <script>
+    const CET_OFFSET = 1; // CET is UTC+1 (without DST)
+
     const events = [
       "00:00|Devil Square",
       "00:00|Minion EXP +30%",
@@ -98,7 +107,7 @@
       "19:00|Blood Castle",
       "19:30|Guild Master Event",
       "20:00|Devil Square",
-      "20:00|Chaos Castle (Tue)",
+      "20:00|Chaos Castle (Tue/Fri)",
       "20:00|Siege War (Wed/Sat)",
       "20:30|Crywolf Fortress (Mon)",
       "21:00|Blood Castle",
@@ -120,66 +129,111 @@
       return `${days > 0 ? days + 'd ' : ''}${hours}h ${minutes}m`;
     }
 
+    function convertCETtoLocalDate(date, hour, minute) {
+      // Event times are CET (UTC+1)
+      // Create a UTC date at CET time by subtracting 1 hour from CET (to get UTC)
+      const utcDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hour - CET_OFFSET, minute, 0, 0));
+      return new Date(utcDate.getTime());
+    }
+
+    function getNextWeeklyDate(now, allowedDays, hour, minute) {
+      const dayIndices = allowedDays.map(d => dayAbbr.indexOf(d));
+      let nextDate = null;
+      let minDiff = 8; // max days + 1
+      for (const dayIndex of dayIndices) {
+        let diff = (dayIndex - now.getDay() + 7) % 7;
+        if (diff === 0) { // Today, check if event time is still ahead
+          const eventTimeToday = convertCETtoLocalDate(now, hour, minute);
+          if (eventTimeToday <= now) {
+            diff = 7; // Move to next week
+          }
+        }
+        if (diff < minDiff) {
+          minDiff = diff;
+          nextDate = new Date(now);
+          nextDate.setDate(now.getDate() + diff);
+          const localEventTime = convertCETtoLocalDate(nextDate, hour, minute);
+          nextDate.setHours(localEventTime.getHours(), localEventTime.getMinutes(), 0, 0);
+        }
+      }
+      return nextDate;
+    }
+
+    function formatTime(date) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
     function updateEvents() {
       const now = new Date();
       const currentTime = now.toTimeString().slice(0, 5);
       const currentDay = dayAbbr[now.getDay()];
       document.getElementById("current-time").textContent = `Current Time: ${currentDay} ${currentTime}`;
 
-      const allUpcoming = [];
+      const dailyEvents = [];
+      const weeklyEvents = [];
 
       for (let e of events) {
         const [time, name] = e.split("|");
         const match = name.match(/\(([^)]+)\)/);
-        const [hour, minute] = time.split(":" ).map(Number);
+        const [hour, minute] = time.split(":").map(Number);
 
-        for (let offset = 0; offset < 7; offset++) {
-          const eventDate = new Date(now);
-          eventDate.setDate(now.getDate() + offset);
-          eventDate.setHours(hour, minute, 0, 0);
-
-          const eventDay = dayAbbr[eventDate.getDay()];
-          if (match) {
-            const days = match[1].split("/");
-            if (!days.includes(eventDay)) continue;
-          }
-
-          if (eventDate > now) {
-            allUpcoming.push({
+        if (match) {
+          // Weekly event
+          const allowedDays = match[1].split(/[\/,\s]+/);
+          const nextDate = getNextWeeklyDate(now, allowedDays, hour, minute);
+          if (nextDate > now) {
+            weeklyEvents.push({
               name: name.replace(/ \([^)]*\)/, ""),
-              time: time,
-              eventTime: eventDate,
-              isWeekly: !!match
+              time: formatTime(nextDate),
+              originalTime: time + " CET",
+              eventTime: nextDate
             });
-            break;
           }
+        } else {
+          // Daily event
+          let eventDate = convertCETtoLocalDate(now, hour, minute);
+          if (eventDate <= now) {
+            eventDate.setDate(eventDate.getDate() + 1);
+          }
+          dailyEvents.push({
+            name: name,
+            time: formatTime(eventDate),
+            originalTime: time + " CET",
+            eventTime: eventDate
+          });
         }
       }
 
-      allUpcoming.sort((a, b) => a.eventTime - b.eventTime);
+      dailyEvents.sort((a, b) => a.eventTime - b.eventTime);
+      weeklyEvents.sort((a, b) => a.eventTime - b.eventTime);
 
-      const upNext = allUpcoming[0];
+      const allEvents = [...dailyEvents, ...weeklyEvents];
+      allEvents.sort((a, b) => a.eventTime - b.eventTime);
+      const upNext = allEvents[0];
+
       document.getElementById("up-next").innerHTML = `
         <h2>Up Next</h2>
         <div class="event-item">
-          <strong>${upNext.name}</strong> at <strong>${upNext.time}</strong><br />
+          <strong>${upNext.name}</strong> at <strong>${upNext.time}</strong>
+          <span class="original-time">(Original: ${upNext.originalTime})</span><br />
           <span class="countdown">Starts in ${getTimeDifference(upNext.eventTime)}</span>
         </div>`;
 
-      const dailyHTML = allUpcoming.filter(e => !e.isWeekly).map(ev => `
+      document.getElementById("daily-events").innerHTML = dailyEvents.map(ev => `
         <div class="event-item">
-          <strong>${ev.name}</strong> at <strong>${ev.time}</strong><br />
+          <strong>${ev.name}</strong> at <strong>${ev.time}</strong>
+          <span class="original-time">(Original: ${ev.originalTime})</span><br />
           <span class="countdown">Starts in ${getTimeDifference(ev.eventTime)}</span>
-        </div>`).join('');
+        </div>
+      `).join('');
 
-      const weeklyHTML = allUpcoming.filter(e => e.isWeekly).map(ev => `
+      document.getElementById("weekly-events").innerHTML = weeklyEvents.map(ev => `
         <div class="event-item">
-          <strong>${ev.name}</strong> at <strong>${ev.time}</strong><br />
+          <strong>${ev.name}</strong> at <strong>${ev.time}</strong>
+          <span class="original-time">(Original: ${ev.originalTime})</span><br />
           <span class="countdown">Starts in ${getTimeDifference(ev.eventTime)}</span>
-        </div>`).join('');
-
-      document.getElementById("daily-events").innerHTML = dailyHTML;
-      document.getElementById("weekly-events").innerHTML = weeklyHTML;
+        </div>
+      `).join('');
     }
 
     updateEvents();
