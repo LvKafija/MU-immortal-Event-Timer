@@ -1,29 +1,23 @@
-MU-immortal-Event-Timer.
+# MU Immortal - Event Timers
 
-https://lvkafija.github.io/MU-immortal-Event-Timer/
+A dynamic and timezone-aware event timer board for the game **MU Immortal**.
 
-✅ Event Calendar Features
+This project shows all major in-game events in a live-updating table with countdowns and automatic timezone conversion. It’s designed for players who want a simple way to track what's next and never miss an event.
 
-📆 Event Categorization
-Daily Events: Events that occur every day without a weekday restriction.
+---
 
-Weekly Events: Events that occur only on specific days (e.g., Chaos Castle on Tue/Fri).
+## 🌟 Features
 
-🕒 Time Handling
-All event times are originally based on CET (Central European Time).
+- ⏰ **Real-Time Countdown** to all events
+- 🕒 **Auto-converts CET to your local timezone**
+- 📆 **Separates Daily and Weekly Events**
+- 📌 **"Up Next" box shows the very next event**
+- 🧠 Built entirely with **HTML + JavaScript** (no backend required)
+- 📱 Fully responsive for mobile and desktop
 
-Times are automatically converted to the user’s local time (e.g., CET+2 for you).
+---
 
-Both local time and original CET time are shown for each event.
+## 📂 Event Structure
 
-24-hour time format used everywhere.
+Events are defined using this format:
 
-⏳ Countdowns
-Every event displays a live countdown showing how long until it starts.
-
-Supports countdown across days (e.g., if an event is in 2 days, it’ll show 2d 5h 10m).
-
-Works for both daily and weekly events.
-
-🚀 Up Next
-The next upcoming event is shown prominently with its local time and a countdown.
