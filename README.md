@@ -11,7 +11,7 @@ A simple self-contained HTML app that displays upcoming event times for **MU Imm
 - ✅ All times shown in **24-hour format**
 - ✅ **User timezone** is detected automatically
 - ✅ CET time shown for accurate cross-reference
-- ✅ Fully offline — runs in any modern browser
+- ✅ Fully offline  runs in any modern browser
 - ✅ No dependencies or external libraries
 
 ---
