@@ -1,5 +1,7 @@
 # MU Immortal – Event Timer Tracker
 
+👉 **Live Demo:** [https://lvkafija.github.io/MU-immortal-Event-Timer/](https://lvkafija.github.io/MU-immortal-Event-Timer/)
+
 A simple self-contained HTML app that displays upcoming event times for **MU Immortal**. It features countdowns to each event in **your local timezone**, while showing the original **CET (Central European Time)** schedule as reference.
 
 ## 🌍 Features
