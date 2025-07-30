@@ -17,14 +17,14 @@ A simple self-contained HTML app that displays upcoming event times for **MU Imm
 ## 📅 Included Events
 
 ### 🔁 Daily Events
-| Event              | Times (CET) |
-|-------------------|-------------|
-| Blood Castle       | Every 2 hours (01:00–23:00) |
-| Devil Square       | Every 2 hours (00:00–22:00) |
-| Red Dragon Invasion| 10:30, 13:30, 16:30, 21:30 |
-| Guild Master Event | 11:30, 19:30 |
-| Cross-server 3v3   | 12:00, 23:30 |
-| Frost Lord         | 12:10, 18:30 |
+| Event                     | Times (CET) |
+|---------------------------|-------------|
+| Blood Castle              | Every 2 hours (01:00–23:00) |
+| Devil Square              | Every 2 hours (00:00–22:00) |
+| Red Dragon Invasion       | 10:30, 13:30, 16:30, 21:30 |
+| Guild Master Event        | 11:30, 19:30 |
+| Cross-server 3v3          | 12:00, 23:30 |
+| [Summer Event] Frost Lord | 12:10, 18:30 |
 
 ### 📆 Weekly Events
 | Event               | Time (CET) | Days       |
