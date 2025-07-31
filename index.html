@@ -106,7 +106,7 @@
   </style>
 </head>
 <body>
-  <h1>MU Immortal - Event Timers (UTC+1)</h1>
+  <h1>MU Immortal - Event Timers</h1>
   <div id="up-next" class="up-next"></div>
   <div id="user-timezone"></div>
   <div class="event-list">
@@ -214,7 +214,7 @@
         div.className = "event";
         div.innerHTML = `
           <div class="event-name">${event.name}</div>
-          <div class="event-time">Local: ${localTime} | UTC+1: ${utcPlus1Time}</div>
+          <div class="event-time">Local: ${localTime} | server time: ${utcPlus1Time}</div>
           <div class="event-timer">Starts in: ${formatCountdown(timeDiff)}</div>
         `;
         container.appendChild(div);
@@ -240,7 +240,7 @@
         const utcPlus1Time = formatTimeUTCPlus1(soonest);
         const timeDiff = soonest - now;
 
-        upNextDiv.innerHTML = `Next Event: <strong>${soonestEvent.name}</strong> at Local: ${localTime} | UTC+1: ${utcPlus1Time} (in ${formatCountdown(timeDiff)})`;
+        upNextDiv.innerHTML = `Next Event: <strong>${soonestEvent.name}</strong> at Local: ${localTime} | server time: ${utcPlus1Time} (in ${formatCountdown(timeDiff)})`;
       } else {
         upNextDiv.textContent = "No upcoming events.";
       }
