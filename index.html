@@ -5,15 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MU Immortal - Event Timers (UTC+1)</title>
   <style>
-    body { font-family: Arial, sans-serif; background-color: #111; color: #eee; padding: 20px; }
-    h1, h2 { color: #f39c12; }
-    .event-list { display: flex; flex-wrap: wrap; gap: 40px; }
-    .event-box { border: 1px solid #444; padding: 10px 20px; border-radius: 8px; background-color: #1e1e1e; min-width: 300px; }
-    .event { margin: 10px 0; padding: 5px; border-bottom: 1px solid #333; }
-    .event:last-child { border-bottom: none; }
-    .event-name { font-weight: bold; }
-    .event-time, .event-timer { font-size: 0.9em; color: #aaa; }
-    .up-next { margin: 20px 0; font-size: 1.2em; color: #0f0; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #eee;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    h1, h2 {
+      color: #f39c12;
+      margin-top: 0;
+    }
+
+    .event-list {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .event-box {
+      border: 1px solid #444;
+      padding: 15px 20px;
+      border-radius: 8px;
+      background-color: #1e1e1e;
+      min-width: 280px;
+      max-width: 450px;
+      flex: 1 1 350px;
+      box-sizing: border-box;
+    }
+
+    .event {
+      margin: 10px 0;
+      padding: 8px 5px;
+      border-bottom: 1px solid #333;
+    }
+    .event:last-child {
+      border-bottom: none;
+    }
+
+    .event-name {
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    .event-time, .event-timer {
+      font-size: 0.9em;
+      color: #aaa;
+    }
+
+    .up-next {
+      margin: 20px 0 30px 0;
+      font-size: 1.3em;
+      color: #0f0;
+      text-align: center;
+    }
+
+    #user-timezone {
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 0.95em;
+      color: #ccc;
+    }
+
+    @media (max-width: 720px) {
+      .event-list {
+        flex-direction: column;
+        gap: 25px;
+        align-items: center;
+      }
+      .event-box {
+        max-width: 100%;
+      }
+      body {
+        padding: 15px 10px;
+      }
+      .up-next {
+        font-size: 1.4em;
+        margin-bottom: 25px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      body {
+        font-size: 14px;
+      }
+      .event-name {
+        font-size: 1em;
+      }
+      .event-time, .event-timer {
+        font-size: 0.85em;
+      }
+      .up-next {
+        font-size: 1.2em;
+      }
+    }
   </style>
 </head>
 <body>
@@ -28,18 +116,19 @@
       <h2>Weekly Events</h2>
     </div>
   </div>
+
   <script>
     const events = [
-      { name: "Blood Castle", times: generateEvery2Hours("00:00", "22:00"), dayAbbr: [] },
+      { name: "Blood Castle", times: generateEvery2Hours("01:00", "23:00"), dayAbbr: [] },
       { name: "Devil Square", times: generateEvery2Hours("01:00", "23:00"), dayAbbr: [] },
       { name: "Red Dragon Invasion", times: ["10:30", "13:30", "16:30", "21:30"], dayAbbr: [] },
       { name: "Guild Master Event", times: ["11:30", "19:30"], dayAbbr: [] },
       { name: "Minion EXP +30%", times: ["00:00"], durationHours: 8, dayAbbr: [] },
       { name: "Cross-server 3v3", times: ["12:00", "23:30"], dayAbbr: [] },
+      { name: "Frost Lord", times: ["12:10", "18:30"], dayAbbr: [] },
       { name: "Crywolf Fortress", times: ["20:30"], dayAbbr: ["Mon"] },
       { name: "Chaos Castle", times: ["20:00"], dayAbbr: ["Tue"] },
       { name: "Siege War", times: ["20:00"], dayAbbr: ["Wed", "Sat"] },
-      { name: "[Summer event] Frost Lord", times: ["12:10", "18:30"], dayAbbr: [] },
     ];
 
     function generateEvery2Hours(start, end) {
@@ -70,6 +159,7 @@
       ));
       return new Date(utcDate.getTime());
     }
+
     function getNextEventTimes(event) {
       const now = new Date();
       const upcoming = [];
@@ -96,11 +186,7 @@
       const utcHour = date.getUTCHours();
       const utcMin = date.getUTCMinutes();
       let hour = utcHour + 1;
-      let dayAdjust = 0;
-      if (hour >= 24) {
-        hour -= 24;
-        dayAdjust = 1;
-      }
+      if (hour >= 24) hour -= 24;
       return `${String(hour).padStart(2,"0")}:${String(utcMin).padStart(2,"0")}`;
     }
 
@@ -157,6 +243,7 @@
         upNextDiv.textContent = "No upcoming events.";
       }
     }
+
     showNextUpcoming();
     renderEvents(document.getElementById("daily-events"), e => e.dayAbbr.length === 0);
     renderEvents(document.getElementById("weekly-events"), e => e.dayAbbr.length > 0);
