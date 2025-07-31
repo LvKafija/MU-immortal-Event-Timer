@@ -18,8 +18,8 @@
 </head>
 <body>
   <h1>MU Immortal - Event Timers</h1>
-  <div id="user-timezone"></div>
   <div id="up-next" class="up-next"></div>
+  <div id="user-timezone"></div>
   <div class="event-list">
     <div id="daily-events" class="event-box">
       <h2>Daily Events</h2>
@@ -36,10 +36,10 @@
       { name: "Guild Master Event", times: ["11:30", "19:30"], dayAbbr: [] },
       { name: "Minion EXP +30%", times: ["00:00"], durationHours: 8, dayAbbr: [] },
       { name: "Cross-server 3v3", times: ["12:00", "23:30"], dayAbbr: [] },
-      { name: "Frost Lord", times: ["12:10", "18:30"], dayAbbr: [] },
       { name: "Crywolf Fortress", times: ["20:30"], dayAbbr: ["Mon"] },
       { name: "Chaos Castle", times: ["20:00"], dayAbbr: ["Tue"] },
       { name: "Siege War", times: ["20:00"], dayAbbr: ["Wed", "Sat"] },
+      { name: "[Summer event] Frost Lord", times: ["12:10", "18:30"], dayAbbr: [] },
     ];
 
     function generateEvery2Hours(start, end) {
@@ -70,8 +70,7 @@
 
         for (const t of event.times) {
           const [hour, minute] = t.split(":" ).map(Number);
-          const dt = new Date(day);
-          dt.setHours(hour, minute, 0, 0);
+          const dt = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), hour, minute));
           if (dt >= now) upcoming.push(dt);
         }
         if (upcoming.length) break;
@@ -80,7 +79,7 @@
     }
 
     function formatTime(date, options = {}) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
+      return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC', ...options });
     }
 
     function formatCountdown(ms) {
@@ -97,15 +96,14 @@
         const nextTimes = getNextEventTimes(event);
         if (!nextTimes.length) continue;
 
-        const localTime = formatTime(new Date(nextTimes[0]));
-        const cetTime = formatTime(new Date(nextTimes[0]), { timeZone: "CET" });
+        const utcTime = formatTime(new Date(nextTimes[0]));
         const timeDiff = nextTimes[0] - new Date();
 
         const div = document.createElement("div");
         div.className = "event";
         div.innerHTML = `
           <div class="event-name">${event.name}</div>
-          <div class="event-time">Local: ${localTime} | CET: ${cetTime}</div>
+          <div class="event-time">UTC: ${utcTime}</div>
           <div class="event-timer">Starts in: ${formatCountdown(timeDiff)}</div>
         `;
         container.appendChild(div);
@@ -127,24 +125,23 @@
       }
 
       if (soonestEvent && soonest) {
-        const localTime = formatTime(soonest);
-        const cetTime = formatTime(soonest, { timeZone: "CET" });
+        const utcTime = formatTime(soonest);
         const timeDiff = soonest - now;
 
-        upNextDiv.innerHTML = `Next Event: <strong>${soonestEvent.name}</strong> at Local: ${localTime} | CET: ${cetTime} (in ${formatCountdown(timeDiff)})`;
+        upNextDiv.innerHTML = `Next Event: <strong>${soonestEvent.name}</strong> at UTC: ${utcTime} (in ${formatCountdown(timeDiff)})`;
       } else {
         upNextDiv.textContent = "No upcoming events.";
       }
     }
 
+    showNextUpcoming();
     renderEvents(document.getElementById("daily-events"), e => e.dayAbbr.length === 0);
     renderEvents(document.getElementById("weekly-events"), e => e.dayAbbr.length > 0);
-    showNextUpcoming();
 
     setInterval(() => {
+      showNextUpcoming();
       renderEvents(document.getElementById("daily-events"), e => e.dayAbbr.length === 0);
       renderEvents(document.getElementById("weekly-events"), e => e.dayAbbr.length > 0);
-      showNextUpcoming();
     }, 60000);
   </script>
 </body>
