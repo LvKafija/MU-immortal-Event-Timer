@@ -5,235 +5,147 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MU Immortal - Event Timers</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 20px;
-      text-align: center;
-    }
-    .container {
-      background: #1e1e1e;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0, 255, 255, 0.2);
-      max-width: 1000px;
-      width: 100%;
-    }
-    h1 { color: #00ffff; margin-bottom: 10px; }
-    .time { font-size: 1.2em; margin-bottom: 20px; }
-    .event-item { margin-bottom: 12px; }
-    .countdown { color: #ffd700; font-size: 0.9em; }
-    .up-next {
-      background-color: #2a2a2a;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    .columns {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      text-align: left;
-    }
-    .column {
-      flex: 1;
-      background: #252525;
-      padding: 15px;
-      border-radius: 10px;
-      max-height: 70vh;
-      overflow-y: auto;
-    }
-    .column h2 {
-      text-align: center;
-    }
-    .original-time {
-      font-size: 0.85em;
-      color: #aaa;
-      margin-left: 8px;
-    }
+    body { font-family: Arial, sans-serif; background-color: #111; color: #eee; padding: 20px; }
+    h1, h2 { color: #f39c12; }
+    .event-list { display: flex; flex-wrap: wrap; gap: 40px; }
+    .event-box { border: 1px solid #444; padding: 10px 20px; border-radius: 8px; background-color: #1e1e1e; min-width: 300px; }
+    .event { margin: 10px 0; padding: 5px; border-bottom: 1px solid #333; }
+    .event:last-child { border-bottom: none; }
+    .event-name { font-weight: bold; }
+    .event-time, .event-timer { font-size: 0.9em; color: #aaa; }
+    .up-next { margin: 20px 0; font-size: 1.2em; color: #0f0; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>MU Immortal - Event Timers</h1>
-    <div class="time" id="current-time"></div>
-    <div id="up-next" class="up-next"></div>
-    <div class="columns">
-      <div class="column">
-        <h2>Daily Events</h2>
-        <div id="daily-events"></div>
-      </div>
-      <div class="column">
-        <h2>Weekly Events</h2>
-        <div id="weekly-events"></div>
-      </div>
+  <h1>MU Immortal - Event Timers</h1>
+  <div id="user-timezone"></div>
+  <div id="up-next" class="up-next"></div>
+  <div class="event-list">
+    <div id="daily-events" class="event-box">
+      <h2>Daily Events</h2>
+    </div>
+    <div id="weekly-events" class="event-box">
+      <h2>Weekly Events</h2>
     </div>
   </div>
-
   <script>
-    const CET_OFFSET = 1;
-
     const events = [
-      "00:00|Devil Square",
-      "00:00|Minion EXP +30%",
-      "01:00|Blood Castle",
-      "02:00|Devil Square",
-      "03:00|Blood Castle",
-      "04:00|Devil Square",
-      "05:00|Blood Castle",
-      "06:00|Devil Square",
-      "07:00|Blood Castle",
-      "08:00|Devil Square",
-      "09:00|Blood Castle",
-      "10:30|Red Dragon Invasion",
-      "11:00|Devil Square",
-      "11:30|Guild Master Event",
-      "12:00|Cross-server 3v3",
-      "12:10|[Cool Summer event] Frost lord",
-      "13:00|Blood Castle",
-      "13:30|Red Dragon Invasion",
-      "14:00|Devil Square",
-      "15:00|Blood Castle",
-      "16:00|Devil Square",
-      "16:30|Red Dragon Invasion",
-      "17:00|Blood Castle",
-      "18:00|Devil Square",
-      "18:30|[Cool Summer event] Frost lord",
-      "19:00|Blood Castle",
-      "19:30|Guild Master Event",
-      "20:00|Devil Square",
-      "20:00|Chaos Castle (Tue/Fri)",
-      "20:00|Siege War (Wed/Sat)",
-      "20:30|Crywolf Fortress (Mon)",
-      "21:00|Blood Castle",
-      "21:30|Red Dragon Invasion",
-      "22:00|Devil Square",
-      "23:00|Blood Castle",
-      "23:30|Cross-server 3v3"
+      { name: "Blood Castle", times: generateEvery2Hours("00:00", "22:00"), dayAbbr: [] },
+      { name: "Devil Square", times: generateEvery2Hours("01:00", "23:00"), dayAbbr: [] },
+      { name: "Red Dragon Invasion", times: ["10:30", "13:30", "16:30", "21:30"], dayAbbr: [] },
+      { name: "Guild Master Event", times: ["11:30", "19:30"], dayAbbr: [] },
+      { name: "Minion EXP +30%", times: ["00:00"], durationHours: 8, dayAbbr: [] },
+      { name: "Cross-server 3v3", times: ["12:00", "23:30"], dayAbbr: [] },
+      { name: "Frost Lord", times: ["12:10", "18:30"], dayAbbr: [] },
+      { name: "Crywolf Fortress", times: ["20:30"], dayAbbr: ["Mon"] },
+      { name: "Chaos Castle", times: ["20:00"], dayAbbr: ["Tue"] },
+      { name: "Siege War", times: ["20:00"], dayAbbr: ["Wed", "Sat"] },
     ];
 
-    const dayAbbr = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    function generateEvery2Hours(start, end) {
+      const times = [];
+      let [sh, sm] = start.split(":" ).map(Number);
+      let [eh, em] = end.split(":" ).map(Number);
+      for (let h = sh; h <= eh; h += 2) {
+        times.push(`${String(h).padStart(2, "0")}:${String(sm).padStart(2, "0")}`);
+      }
+      return times;
+    }
 
-    function getTimeDifference(eventTime) {
+    const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    document.getElementById("user-timezone").textContent = `Your Timezone: ${userTz}`;
+
+    const upNextDiv = document.getElementById("up-next");
+
+    function getNextEventTimes(event) {
       const now = new Date();
-      let diffMs = eventTime - now;
-      const totalMinutes = Math.floor(diffMs / 60000);
-      const days = Math.floor(totalMinutes / 1440);
-      const hours = Math.floor((totalMinutes % 1440) / 60);
-      const minutes = totalMinutes % 60;
-      return `${days > 0 ? days + 'd ' : ''}${hours}h ${minutes}m`;
-    }
+      const upcoming = [];
 
-    function convertCETtoLocalDate(date, hour, minute) {
-      const utcDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), hour - CET_OFFSET, minute, 0, 0));
-      return new Date(utcDate.getTime());
-    }
+      for (let offset = 0; offset < 8; offset++) {
+        const day = new Date(now);
+        day.setDate(now.getDate() + offset);
 
-    function getNextWeeklyDate(now, allowedDays, hour, minute) {
-      const dayIndices = allowedDays.map(d => dayAbbr.indexOf(d));
-      let nextDate = null;
-      let minDiff = 8; 
-      for (const dayIndex of dayIndices) {
-        let diff = (dayIndex - now.getDay() + 7) % 7;
-        if (diff === 0) { 
-          const eventTimeToday = convertCETtoLocalDate(now, hour, minute);
-          if (eventTimeToday <= now) {
-            diff = 7; 
-          }
+        const dayAbbr = day.toLocaleDateString('en-US', { weekday: 'short' });
+        if (event.dayAbbr.length && !event.dayAbbr.includes(dayAbbr)) continue;
+
+        for (const t of event.times) {
+          const [hour, minute] = t.split(":" ).map(Number);
+          const dt = new Date(day);
+          dt.setHours(hour, minute, 0, 0);
+          if (dt >= now) upcoming.push(dt);
         }
-        if (diff < minDiff) {
-          minDiff = diff;
-          nextDate = new Date(now);
-          nextDate.setDate(now.getDate() + diff);
-          const localEventTime = convertCETtoLocalDate(nextDate, hour, minute);
-          nextDate.setHours(localEventTime.getHours(), localEventTime.getMinutes(), 0, 0);
+        if (upcoming.length) break;
+      }
+      return upcoming;
+    }
+
+    function formatTime(date, options = {}) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false, ...options });
+    }
+
+    function formatCountdown(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      return `${days}d ${hours}h ${minutes}m`;
+    }
+
+    function renderEvents(container, filterFn) {
+      container.querySelectorAll(".event").forEach(e => e.remove());
+      for (const event of events.filter(filterFn)) {
+        const nextTimes = getNextEventTimes(event);
+        if (!nextTimes.length) continue;
+
+        const localTime = formatTime(new Date(nextTimes[0]));
+        const cetTime = formatTime(new Date(nextTimes[0]), { timeZone: "CET" });
+        const timeDiff = nextTimes[0] - new Date();
+
+        const div = document.createElement("div");
+        div.className = "event";
+        div.innerHTML = `
+          <div class="event-name">${event.name}</div>
+          <div class="event-time">Local: ${localTime} | CET: ${cetTime}</div>
+          <div class="event-timer">Starts in: ${formatCountdown(timeDiff)}</div>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    function showNextUpcoming() {
+      const now = new Date();
+      let soonest = null;
+      let soonestEvent = null;
+
+      for (const event of events) {
+        const upcoming = getNextEventTimes(event);
+        if (!upcoming.length) continue;
+        if (!soonest || upcoming[0] < soonest) {
+          soonest = upcoming[0];
+          soonestEvent = event;
         }
       }
-      return nextDate;
-    }
 
-    function formatTime(date) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
+      if (soonestEvent && soonest) {
+        const localTime = formatTime(soonest);
+        const cetTime = formatTime(soonest, { timeZone: "CET" });
+        const timeDiff = soonest - now;
 
-    function updateEvents() {
-      const now = new Date();
-      const currentTime = now.toTimeString().slice(0, 5);
-      const currentDay = dayAbbr[now.getDay()];
-      document.getElementById("current-time").textContent = `Current Time: ${currentDay} ${currentTime}`;
-
-      const dailyEvents = [];
-      const weeklyEvents = [];
-
-      for (let e of events) {
-        const [time, name] = e.split("|");
-        const match = name.match(/\(([^)]+)\)/);
-        const [hour, minute] = time.split(":").map(Number);
-
-        if (match) {
-          const allowedDays = match[1].split(/[\/,\s]+/);
-          const nextDate = getNextWeeklyDate(now, allowedDays, hour, minute);
-          if (nextDate > now) {
-            weeklyEvents.push({
-              name: name.replace(/ \([^)]*\)/, ""),
-              time: formatTime(nextDate),
-              originalTime: time + " CET",
-              eventTime: nextDate
-            });
-          }
-        } else {
-          let eventDate = convertCETtoLocalDate(now, hour, minute);
-          if (eventDate <= now) {
-            eventDate.setDate(eventDate.getDate() + 1);
-          }
-          dailyEvents.push({
-            name: name,
-            time: formatTime(eventDate),
-            originalTime: time + " CET",
-            eventTime: eventDate
-          });
-        }
+        upNextDiv.innerHTML = `Next Event: <strong>${soonestEvent.name}</strong> at Local: ${localTime} | CET: ${cetTime} (in ${formatCountdown(timeDiff)})`;
+      } else {
+        upNextDiv.textContent = "No upcoming events.";
       }
-
-      dailyEvents.sort((a, b) => a.eventTime - b.eventTime);
-      weeklyEvents.sort((a, b) => a.eventTime - b.eventTime);
-
-      const allEvents = [...dailyEvents, ...weeklyEvents];
-      allEvents.sort((a, b) => a.eventTime - b.eventTime);
-      const upNext = allEvents[0];
-
-      document.getElementById("up-next").innerHTML = `
-        <h2>Up Next</h2>
-        <div class="event-item">
-          <strong>${upNext.name}</strong> at <strong>${upNext.time}</strong>
-          <span class="original-time">(Original: ${upNext.originalTime})</span><br />
-          <span class="countdown">Starts in ${getTimeDifference(upNext.eventTime)}</span>
-        </div>`;
-
-      document.getElementById("daily-events").innerHTML = dailyEvents.map(ev => `
-        <div class="event-item">
-          <strong>${ev.name}</strong> at <strong>${ev.time}</strong>
-          <span class="original-time">(Original: ${ev.originalTime})</span><br />
-          <span class="countdown">Starts in ${getTimeDifference(ev.eventTime)}</span>
-        </div>
-      `).join('');
-
-      document.getElementById("weekly-events").innerHTML = weeklyEvents.map(ev => `
-        <div class="event-item">
-          <strong>${ev.name}</strong> at <strong>${ev.time}</strong>
-          <span class="original-time">(Original: ${ev.originalTime})</span><br />
-          <span class="countdown">Starts in ${getTimeDifference(ev.eventTime)}</span>
-        </div>
-      `).join('');
     }
 
-    updateEvents();
-    setInterval(updateEvents, 60000);
+    renderEvents(document.getElementById("daily-events"), e => e.dayAbbr.length === 0);
+    renderEvents(document.getElementById("weekly-events"), e => e.dayAbbr.length > 0);
+    showNextUpcoming();
+
+    setInterval(() => {
+      renderEvents(document.getElementById("daily-events"), e => e.dayAbbr.length === 0);
+      renderEvents(document.getElementById("weekly-events"), e => e.dayAbbr.length > 0);
+      showNextUpcoming();
+    }, 60000);
   </script>
 </body>
 </html>
