@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MU Immortal - Event Timers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MU Immortal - Event Timers (UTC+1)</title>
   <style>
     body { font-family: Arial, sans-serif; background-color: #111; color: #eee; padding: 20px; }
     h1, h2 { color: #f39c12; }
@@ -17,7 +17,7 @@
   </style>
 </head>
 <body>
-  <h1>MU Immortal - Event Timers</h1>
+  <h1>MU Immortal - Event Timers (UTC+1)</h1>
   <div id="up-next" class="up-next"></div>
   <div id="user-timezone"></div>
   <div class="event-list">
@@ -44,8 +44,8 @@
 
     function generateEvery2Hours(start, end) {
       const times = [];
-      let [sh, sm] = start.split(":" ).map(Number);
-      let [eh, em] = end.split(":" ).map(Number);
+      let [sh, sm] = start.split(":").map(Number);
+      let [eh, em] = end.split(":").map(Number);
       for (let h = sh; h <= eh; h += 2) {
         times.push(`${String(h).padStart(2, "0")}:${String(sm).padStart(2, "0")}`);
       }
@@ -57,6 +57,19 @@
 
     const upNextDiv = document.getElementById("up-next");
 
+    function getEventDateFromUTCPlus1(dayDate, timeStr) {
+      const [hour, minute] = timeStr.split(":").map(Number);
+      const utcDate = new Date(Date.UTC(
+        dayDate.getFullYear(),
+        dayDate.getMonth(),
+        dayDate.getDate(),
+        hour - 1,
+        minute,
+        0,
+        0
+      ));
+      return new Date(utcDate.getTime());
+    }
     function getNextEventTimes(event) {
       const now = new Date();
       const upcoming = [];
@@ -64,22 +77,31 @@
       for (let offset = 0; offset < 8; offset++) {
         const day = new Date(now);
         day.setDate(now.getDate() + offset);
-
         const dayAbbr = day.toLocaleDateString('en-US', { weekday: 'short' });
         if (event.dayAbbr.length && !event.dayAbbr.includes(dayAbbr)) continue;
 
         for (const t of event.times) {
-          const [hour, minute] = t.split(":" ).map(Number);
-          const dt = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), hour, minute));
+          const dt = getEventDateFromUTCPlus1(day, t);
           if (dt >= now) upcoming.push(dt);
         }
         if (upcoming.length) break;
       }
-      return upcoming;
+      return upcoming.sort((a,b) => a-b);
     }
 
-    function formatTime(date, options = {}) {
-      return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'UTC', ...options });
+    function formatTimeLocal(date) {
+      return date.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" });
+    }
+    function formatTimeUTCPlus1(date) {
+      const utcHour = date.getUTCHours();
+      const utcMin = date.getUTCMinutes();
+      let hour = utcHour + 1;
+      let dayAdjust = 0;
+      if (hour >= 24) {
+        hour -= 24;
+        dayAdjust = 1;
+      }
+      return `${String(hour).padStart(2,"0")}:${String(utcMin).padStart(2,"0")}`;
     }
 
     function formatCountdown(ms) {
@@ -96,14 +118,15 @@
         const nextTimes = getNextEventTimes(event);
         if (!nextTimes.length) continue;
 
-        const utcTime = formatTime(new Date(nextTimes[0]));
+        const localTime = formatTimeLocal(nextTimes[0]);
+        const utcPlus1Time = formatTimeUTCPlus1(nextTimes[0]);
         const timeDiff = nextTimes[0] - new Date();
 
         const div = document.createElement("div");
         div.className = "event";
         div.innerHTML = `
           <div class="event-name">${event.name}</div>
-          <div class="event-time">UTC: ${utcTime}</div>
+          <div class="event-time">Local: ${localTime} | UTC+1: ${utcPlus1Time}</div>
           <div class="event-timer">Starts in: ${formatCountdown(timeDiff)}</div>
         `;
         container.appendChild(div);
@@ -125,15 +148,15 @@
       }
 
       if (soonestEvent && soonest) {
-        const utcTime = formatTime(soonest);
+        const localTime = formatTimeLocal(soonest);
+        const utcPlus1Time = formatTimeUTCPlus1(soonest);
         const timeDiff = soonest - now;
 
-        upNextDiv.innerHTML = `Next Event: <strong>${soonestEvent.name}</strong> at UTC: ${utcTime} (in ${formatCountdown(timeDiff)})`;
+        upNextDiv.innerHTML = `Next Event: <strong>${soonestEvent.name}</strong> at Local: ${localTime} | UTC+1: ${utcPlus1Time} (in ${formatCountdown(timeDiff)})`;
       } else {
         upNextDiv.textContent = "No upcoming events.";
       }
     }
-
     showNextUpcoming();
     renderEvents(document.getElementById("daily-events"), e => e.dayAbbr.length === 0);
     renderEvents(document.getElementById("weekly-events"), e => e.dayAbbr.length > 0);
