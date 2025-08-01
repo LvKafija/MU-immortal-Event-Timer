@@ -26,7 +26,6 @@ A simple self-contained HTML app that displays upcoming event times for **MU Imm
 | Red Dragon Invasion       | 10:30, 13:30, 16:30, 21:30 |
 | Guild Master Event        | 11:30, 19:30 |
 | Cross-server 3v3          | 12:00, 23:30 |
-| [Summer Event] Frost Lord | 12:10, 18:30 |
 
 ### 📆 Weekly Events
 | Event               | Time (CET) | Days       |
