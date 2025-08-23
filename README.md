@@ -1,71 +1,77 @@
-# MU Immortal – Event Tracker (EU server)
+# MU Immortal - Event Timers
 
-👉 **Live Demo:** [https://lvkafija.github.io/MU-immortal-Event-Timer/](https://lvkafija.github.io/MU-immortal-Event-Timer/)
+[Live Demo](https://lvkafija.github.io/MU-immortal-Event-Timer/)
 
-A simple self-contained HTML app that displays upcoming event times for **MU Immortal**. It features countdowns to each event in **your local timezone**, while showing the original **CET (Central European Time)** schedule as reference.
-
-## 🌍 Features
-
-- ✅ Shows all **daily events** with live countdown timers
-- ✅ Displays **weekly events** (based on scheduled weekdays)
-- ✅ All times shown in **24-hour format**
-- ✅ **User timezone** is detected automatically
-- ✅ CET time shown for accurate cross-reference
-- ✅ Fully offline  runs in any modern browser
-- ✅ No dependencies or external libraries
+This project is a **real-time event timer** for the game *MU Immortal*, showing all daily and weekly events with countdowns and local time conversion. It includes the ability to see which events are currently active and the next upcoming event.
 
 ---
 
-## 📅 Included Events
+## Features
 
-### 🔁 Daily Events
-| Event                     | Times (CET) |
-|---------------------------|-------------|
-| Blood Castle              | Every 2 hours (01:00–23:00) |
-| Devil Square              | Every 2 hours (00:00–22:00) |
-| Red Dragon Invasion       | 10:30, 13:30, 16:30, 21:30 |
-| Guild Master Event        | 11:30, 19:30 |
-| Cross-server 3v3          | 12:00, 23:30 |
-
-### 📆 Weekly Events
-| Event               | Time (CET) | Days       |
-|--------------------|------------|------------|
-| Crywolf Fortress   | 20:30      | Monday     |
-| Chaos Castle       | 20:00      | Tuesday    |
-| Siege War          | 20:00      | Wednesday, Saturday |
+- **Daily and Weekly Event Timers**  
+  Displays all MU Immortal events sorted by daily and weekly schedule.  
+- **Up Next Event**  
+  Shows the next upcoming event with a countdown.  
+- **Currently Active Events**  
+  Shows events that are currently ongoing, e.g., Blood Castle, Devil Square, Golden Invasion.  
+- **Local Time Conversion**  
+  All event times are displayed in the user’s local time while keeping reference to the game server time (UTC+1).  
+- **Responsive Design**  
+  Optimized for desktop and mobile devices.  
+- **Automatic Updates**  
+  Timers and active events refresh every minute.
 
 ---
 
-## 📦 Usage
+## Supported Events
 
-1. **Download or clone** the repository.
-2. Open the `index.html` file in any web browser.
-3. The page will show:
-   - Upcoming **daily events**
-   - **Weekly events** separated by weekday
-   - Countdown timers until each event begins
-4. Event times will be adjusted automatically to your **current timezone**.
+### Daily Events
 
----
+- Blood Castle
+- Devil Square
+- Red Dragon Invasion
+- Guild Master Event
+- Minion EXP +30%
+- Cross-server 3v3
+- Frost Lord
+- Ethereal Pact Event
+- Golden Invasion
 
-## 🌐 Timezone Notes
+### Weekly Events
 
-- CET is **UTC+1** (or UTC+2 during daylight saving).
-- Your local timezone is detected automatically.
-- All countdowns are based on **your time** (24-hour format).
-- CET time is also shown for comparison.
-
----
-
-## 📁 Files
-
-- `index.html` – Complete self-contained app
-- No external JS or CSS needed
+- Crywolf Fortress (Monday 20:30)
+- Chaos Castle (Tuesday 20:00)
+- Siege War (Wednesday and Saturday 20:00)
+- Divine Trade Route (Monday 20:00, Friday 20:30)
 
 ---
 
-## 🛠️ Author Notes
+## Usage
 
-This timer was built to assist MU players in tracking both daily and weekly recurring events across timezones, especially for planning around CET-based schedules.
+1. Clone or download this repository.
+2. Open `index.html` in your browser.
+3. The timer will automatically detect your local timezone and display:
+   - Next upcoming event.
+   - Currently active events.
+   - Daily and weekly event schedules with countdowns.
 
-Pull requests welcome!
+---
+
+## Live Demo
+
+You can see a live version here:  
+[https://lvkafija.github.io/MU-immortal-Event-Timer/](https://lvkafija.github.io/MU-immortal-Event-Timer/)
+
+---
+
+## Customization
+
+- Add new events by editing the `events` array in `index.html`.
+- Set event duration (in minutes) using the `duration` property for active timers.
+- Adjust time for events relative to UTC+1 if the server schedule changes.
+
+---
+
+## License
+
+This project is open source and available under the MIT License.
