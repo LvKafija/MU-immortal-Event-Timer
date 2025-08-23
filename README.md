@@ -1,75 +1,65 @@
-MU Immortal - Event Timers (EU Server)
+# MU Immortal Event Timer
 
-[Live Demo](https://lvkafija.github.io/MU-immortal-Event-Timer/)
-
-This project is a **real-time event timer** for the game *MU Immortal*, showing all daily and weekly events with countdowns and local time conversion. It includes the ability to see which events are currently active and the next upcoming event.
-
----
+A live event timer for **MU Immortal**, showing daily, weekly, currently active, and upcoming events with local and server times. Built to be responsive for desktop and mobile browsers.
 
 ## Features
 
-- **Daily and Weekly Event Timers**  
-  Displays all MU Immortal events sorted by daily and weekly schedule.  
-- **Up Next Event**  
-  Shows the next upcoming event with a countdown.  
-- **Currently Active Events**  
-  Shows events that are currently ongoing, e.g., Blood Castle, Devil Square, Golden Invasion.  
-- **Local Time Conversion**  
-  All event times are displayed in the user’s local time while keeping reference to the game server time (UTC+1).  
-- **Responsive Design**  
-  Optimized for desktop and mobile devices.  
-- **Automatic Updates**  
-  Timers and active events refresh every minute.
+- **Currently Active Events** – Permanently displays events that are currently running, with remaining active time.  
+- **Next Event** – Shows the upcoming event with a countdown timer.  
+- **Daily & Weekly Events** – Lists all events with local time and server time (UTC+1).  
+- **Browser Notifications** – Alerts 5 minutes before an event starts (only once per occurrence).  
+- **Day/Night Mode** – Toggle between light and dark themes using the moon/sun icon.  
+- **Responsive Layout** – Works on desktop and mobile; collapses neatly on smaller screens.  
+- **User Timezone Conversion** – Automatically detects local timezone and adjusts event times.  
+- **Countdown Timers** – All events show time remaining until start.  
 
----
-
-## Supported Events
+## Event List
 
 ### Daily Events
-
-- Blood Castle
-- Devil Square
-- Red Dragon Invasion
-- Guild Master Event
-- Minion EXP +30%
-- Cross-server 3v3
-- Ethereal Pact Event
+| Event | Times (Local) | Duration (min) |
+|-------|---------------|----------------|
+| Blood Castle | every 2 hours 01:00–23:00 | 15 |
+| Devil Square | every 2 hours 00:00–22:00 | 15 |
+| Red Dragon Invasion | 10:30, 13:30, 16:30, 21:30 | 20 |
+| Guild Master Event | 11:30, 19:30 | 30 |
+| Minion EXP +30% | 00:00 | 480 |
+| Cross-server 3v3 | 12:00, 23:30 | — |
+| Ethereal Pact | 11:00, 15:00, 19:00, 23:00 | — |
 
 ### Weekly Events
+| Event | Times (Local) | Duration (min) | Days |
+|-------|---------------|----------------|------|
+| Crywolf Fortress | 20:30 | 15 | Mon |
+| Chaos Castle | 20:00 | 15 | Tue |
+| Siege War | 20:00 | 30 | Wed, Sat |
+| Divine Trade Route | 20:00, 20:30 | — | Mon, Fri |
+| Vulcanus | 20:00 | 15 | Wed, Fri |
 
-- Crywolf Fortress (Monday 20:30)
-- Chaos Castle (Tuesday 20:00)
-- Siege War (Wednesday and Saturday 20:00)
-- Divine Trade Route (Monday 20:00, Friday 20:30)
-
----
+### Active Event Durations
+- Blood Castle – 15 min  
+- Devil Square – 15 min  
+- Red Dragon Invasion – 20 min  
+- Guild Master Event – 30 min  
+- Minion EXP +30% – 480 min (8hrs) 
+- Crywolf Fortress – 15 min  
+- Chaos Castle – 15 min  
+- Siege War – 30 min  
+- Vulcanus – 15 min  
 
 ## Usage
 
-1. Clone or download this repository.
-2. Open `index.html` in your browser.
-3. The timer will automatically detect your local timezone and display:
-   - Next upcoming event.
-   - Currently active events.
-   - Daily and weekly event schedules with countdowns.
+Open the timer in a web browser:
 
----
+[MU Immortal Event Timer](https://lvkafija.github.io/MU-immortal-Event-Timer/)
 
-## Live Demo
+### Controls
+- **Day/Night Toggle** – Top-right corner to switch theme.  
+- **Notifications** – Browser will prompt to allow notifications 5 minutes before events.  
 
-You can see a live version here:  
-[https://lvkafija.github.io/MU-immortal-Event-Timer/](https://lvkafija.github.io/MU-immortal-Event-Timer/)
+## Contributing
 
----
-
-## Customization
-
-- Add new events by editing the `events` array in `index.html`.
-- Set event duration (in minutes) using the `duration` property for active timers.
-- Adjust time for events relative to UTC+1 if the server schedule changes.
-
----
+Feel free to suggest additional events or improvements by opening an issue or submitting a pull request.
 
 ## License
 
-This project is open source and available under the MIT License.
+This project is open-source under the MIT License.
