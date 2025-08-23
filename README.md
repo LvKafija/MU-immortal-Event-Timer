@@ -1,4 +1,4 @@
-# MU Immortal - Event Timers
+MU Immortal - Event Timers (EU Server)
 
 [Live Demo](https://lvkafija.github.io/MU-immortal-Event-Timer/)
 
