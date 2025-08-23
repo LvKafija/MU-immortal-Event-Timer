@@ -33,9 +33,7 @@ This project is a **real-time event timer** for the game *MU Immortal*, showing 
 - Guild Master Event
 - Minion EXP +30%
 - Cross-server 3v3
-- Frost Lord
 - Ethereal Pact Event
-- Golden Invasion
 
 ### Weekly Events
 
