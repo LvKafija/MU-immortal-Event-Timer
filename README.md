@@ -35,16 +35,6 @@ A live event timer for **MU Immortal**, showing daily, weekly, currently active,
 | Divine Trade Route | 20:00, 20:30 | — | Mon, Fri |
 | Vulcanus | 20:00 | 15 | Wed, Fri |
 
-### Active Event Durations
-- Blood Castle – 15 min  
-- Devil Square – 15 min  
-- Red Dragon Invasion – 20 min  
-- Guild Master Event – 30 min  
-- Minion EXP +30% – 480 min (8hrs) 
-- Crywolf Fortress – 15 min  
-- Chaos Castle – 15 min  
-- Siege War – 30 min  
-- Vulcanus – 15 min  
 
 ## Usage
 
