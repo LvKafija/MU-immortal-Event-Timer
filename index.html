@@ -13,39 +13,32 @@
     margin: 0;
     min-height: 100vh;
     box-sizing: border-box;
-    transition: background-color 0.3s, color 0.3s;
+    transition: background 0.3s, color 0.3s;
   }
   body.light {
-    background-color: #f9f9f9;
+    background-color: #f5f5f5;
     color: #111;
   }
-  h1 {
+  h1, h2 {
     text-align: center;
     color: #f39c12;
     margin-top: 0;
   }
-  #top-controls {
+  .top-bar {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 10px;
-  }
-  #theme-toggle {
-    cursor: pointer;
-    font-size: 24px;
-    user-select: none;
-  }
-  #user-timezone {
-    text-align: center;
     margin-bottom: 15px;
-    font-size: 0.95em;
-    color: #ccc;
+    gap: 10px;
   }
-  .event-row {
+  .icon-button {
+    cursor: pointer;
+    font-size: 1.5em;
+  }
+  .event-list {
     display: flex;
-    gap: 20px;
+    gap: 40px;
     flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 25px;
   }
   .event-box {
     border: 1px solid #444;
@@ -53,47 +46,28 @@
     border-radius: 8px;
     background-color: #1e1e1e;
     min-width: 280px;
-    max-width: 350px;
-    flex: 1 1 300px;
+    max-width: 450px;
+    flex: 1 1 350px;
     box-sizing: border-box;
   }
   body.light .event-box {
     background-color: #fff;
     border-color: #ccc;
-    color: #111;
-  }
-  .event-box h2 {
-    text-align: center;
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #f39c12;
   }
   .event {
     margin: 10px 0;
     padding: 8px 5px;
     border-bottom: 1px solid #333;
   }
-  body.light .event {
-    border-bottom: 1px solid #ccc;
-  }
-  .event-name {
-    font-weight: bold;
-    font-size: 1.1em;
-  }
-  .event-time, .event-timer {
-    font-size: 0.9em;
-    color: #aaa;
-  }
-  body.light .event-time,
-  body.light .event-timer {
-    color: #555;
-  }
+  .event:last-child { border-bottom: none; }
+  .event-name { font-weight: bold; font-size: 1.1em; }
+  .event-time, .event-timer { font-size: 0.9em; color: #aaa; }
+  .up-next, .active-events { text-align: center; margin: 20px 0; font-size: 1.2em; color: #0f0; }
+  #user-timezone { text-align: center; margin-bottom: 15px; font-size: 0.95em; color: #ccc; }
   @media (max-width: 720px) {
-    .event-row {
-      flex-direction: column;
-      gap: 15px;
-      align-items: center;
-    }
+    .event-list { flex-direction: column; gap: 25px; align-items: center; }
+    .event-box { max-width: 100%; }
+    body { padding: 15px 10px; }
   }
   @media (max-width: 400px) {
     body { font-size: 14px; }
@@ -103,28 +77,16 @@
 </style>
 </head>
 <body>
-<div id="top-controls">
-  <div id="theme-toggle" title="Toggle Day/Night">🌙</div>
+<div class="top-bar">
+  <span id="day-night-toggle" class="icon-button">🌙</span>
 </div>
 <h1>MU Immortal - Event Timers (UTC+1)</h1>
 <div id="user-timezone"></div>
-<div class="event-row">
-  <div id="currently-active" class="event-box">
-    <h2>Currently Active Events</h2>
-    <div id="active-events">No active events</div>
-  </div>
-  <div id="next-event-box" class="event-box">
-    <h2>Next Event</h2>
-    <div id="up-next">No upcoming events</div>
-  </div>
-</div>
-<div class="event-row">
-  <div id="daily-events" class="event-box">
-    <h2>Daily Events</h2>
-  </div>
-  <div id="weekly-events" class="event-box">
-    <h2>Weekly Events</h2>
-  </div>
+<div id="up-next" class="up-next"></div>
+<div id="active-events" class="active-events">No active events</div>
+<div class="event-list">
+  <div id="daily-events" class="event-box"><h2>Daily Events</h2></div>
+  <div id="weekly-events" class="event-box"><h2>Weekly Events</h2></div>
 </div>
 
 <script>
@@ -143,126 +105,114 @@ const events = [
   { name:"Vulcanus", times:["20:00"], duration:15, dayAbbr:["Wed","Fri"] }
 ];
 
+const notifiedEvents = new Set();
+const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+document.getElementById("user-timezone").textContent = `Your Timezone: ${userTz}`;
+
 function generateEvery2Hours(start,end){
-  const times=[];
-  let [sh,sm]=start.split(":").map(Number);
+  const times=[]; let [sh,sm]=start.split(":").map(Number);
   let [eh,em]=end.split(":").map(Number);
-  for(let h=sh;h<=eh;h+=2){
-    times.push(`${String(h).padStart(2,"0")}:${String(sm).padStart(2,"0")}`);
-  }
+  for(let h=sh;h<=eh;h+=2){times.push(`${String(h).padStart(2,"0")}:${String(sm).padStart(2,"0")}`);}
   return times;
 }
 
-const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-document.getElementById("user-timezone").textContent=`Your Timezone: ${userTz}`;
-
 function getEventDateFromUTCPlus1(dayDate,timeStr){
   const [hour,minute]=timeStr.split(":").map(Number);
-  const utcDate = new Date(Date.UTC(dayDate.getFullYear(),dayDate.getMonth(),dayDate.getDate(),hour-1,minute));
+  const utcDate=new Date(Date.UTC(dayDate.getFullYear(),dayDate.getMonth(),dayDate.getDate(),hour-1,minute));
   return utcDate;
 }
 
 function getNextEventTime(event){
   const now=new Date();
   for(let offset=0;offset<8;offset++){
-    const day=new Date(now);
-    day.setDate(now.getDate()+offset);
-    const dayAbbr = day.toLocaleDateString('en-US',{weekday:'short'});
+    const day=new Date(now); day.setDate(now.getDate()+offset);
+    const dayAbbr=day.toLocaleDateString('en-US',{weekday:'short'});
     if(event.dayAbbr.length && !event.dayAbbr.includes(dayAbbr)) continue;
     for(const t of event.times){
-      const dt = getEventDateFromUTCPlus1(day,t);
+      const dt=getEventDateFromUTCPlus1(day,t);
       if(dt>=now) return dt;
     }
   }
   return null;
 }
 
-function formatTimeLocal(date){
-  return date.toLocaleTimeString([], {hour12:false,hour:"2-digit",minute:"2-digit"});
-}
-function formatTimeUTCPlus1(date){
-  let hour=date.getUTCHours()+1;
-  if(hour>=24) hour-=24;
-  return `${String(hour).padStart(2,"0")}:${String(date.getUTCMinutes()).padStart(2,"0")}`;
-}
-function formatCountdown(ms){
-  const totalSeconds=Math.floor(ms/1000);
-  const days=Math.floor(totalSeconds/86400);
-  const hours=Math.floor((totalSeconds%86400)/3600);
-  const minutes=Math.floor((totalSeconds%3600)/60);
-  return `${days}d ${hours}h ${minutes}m`;
-}
+function formatTimeLocal(date){return date.toLocaleTimeString([], {hour12:false,hour:"2-digit",minute:"2-digit"});}
+function formatTimeUTCPlus1(date){let hour=date.getUTCHours()+1;if(hour>=24)hour-=24;return `${String(hour).padStart(2,"0")}:${String(date.getUTCMinutes()).padStart(2,"0")}`;}
+function formatCountdown(ms){const totalSeconds=Math.floor(ms/1000);const days=Math.floor(totalSeconds/86400);const hours=Math.floor((totalSeconds%86400)/3600);const minutes=Math.floor((totalSeconds%3600)/60);return `${days}d ${hours}h ${minutes}m`;}
 
-function renderEvents(container,filterFn){
+// Render events
+function renderEvents(container, filterFn){
   container.querySelectorAll(".event").forEach(e=>e.remove());
   for(const event of events.filter(filterFn)){
-    const nextTime = getNextEventTime(event);
+    const nextTime=getNextEventTime(event);
     if(!nextTime) continue;
     const localTime=formatTimeLocal(nextTime);
     const utcPlus1Time=formatTimeUTCPlus1(nextTime);
     const timeDiff=nextTime-new Date();
     const div=document.createElement("div");
     div.className="event";
-    div.innerHTML=`
-      <div class="event-name">${event.name}</div>
-      <div class="event-time">Local: ${localTime} | Server: ${utcPlus1Time}</div>
-      <div class="event-timer">Starts in: ${formatCountdown(timeDiff)}</div>
-    `;
+    div.innerHTML=`<div class="event-name">${event.name}</div>
+      <div class="event-time">Local: ${localTime} | server: ${utcPlus1Time}</div>
+      <div class="event-timer">Starts in: ${formatCountdown(timeDiff)}</div>`;
     container.appendChild(div);
   }
 }
 
+// Currently Active
 function showCurrentlyActiveAndNext(){
   const now=new Date();
   let nextEvent=null;
   let nextTime=null;
-  const activeDiv=document.getElementById("active-events");
-  const upNextDiv=document.getElementById("up-next");
-  let activeEvents=[];
-
+  const activeEvents=[];
   for(const event of events){
+    const upcoming=getNextEventTime(event);
+    if(upcoming && (!nextTime || upcoming<nextTime)){
+      nextTime=upcoming; nextEvent=event;
+    }
+    // check active
     for(const t of event.times){
-      const start=getEventDateFromUTCPlus1(now,t);
-      const end=new Date(start.getTime()+event.durationMinutes*60000);
-      if(event.dayAbbr.length){
-        const dayAbbr=now.toLocaleDateString('en-US',{weekday:'short'});
-        if(!event.dayAbbr.includes(dayAbbr)) continue;
-      }
-      if(start<=now && now<=end){
-        activeEvents.push({name:event.name,end});
-      }
-      if(start>now && (!nextTime || start<nextTime)){
-        nextTime=start;
-        nextEvent=event;
+      const eventStart=getEventDateFromUTCPlus1(now,t);
+      let duration=(event.duration||0)*60*1000;
+      if(duration===0) duration=0;
+      if(now>=eventStart && now<=eventStart+duration){
+        activeEvents.push({name:event.name,remaining:eventStart+duration-now});
       }
     }
   }
 
-  if(activeEvents.length){
-    activeDiv.innerHTML="";
-    for(const e of activeEvents){
-      const remaining=e.end-now;
-      const div=document.createElement("div");
-      div.textContent=`${e.name} - ${formatCountdown(remaining)} remaining`;
-      activeDiv.appendChild(div);
-    }
-  }else{
-    activeDiv.textContent="No active events";
-  }
-
+  // Up next
+  const upNextDiv=document.getElementById("up-next");
   if(nextEvent && nextTime){
     const local=formatTimeLocal(nextTime);
     const server=formatTimeUTCPlus1(nextTime);
+    upNextDiv.textContent=`Next Event: ${nextEvent.name} at Local ${local} | Server ${server} (${formatCountdown(nextTime-now)})`;
+  } else upNextDiv.textContent="No upcoming events";
+
+  // Active events
+  const activeDiv=document.getElementById("active-events");
+  if(activeEvents.length){
+    activeDiv.innerHTML=activeEvents.map(e=>`${e.name} active for ${Math.floor(e.remaining/60000)} min`).join("<br>");
+  } else activeDiv.textContent="No active events";
+
+  // Notifications
+  if(nextEvent && nextTime && !notifiedEvents.has(nextEvent.name)){
     const diff=nextTime-now;
-    upNextDiv.textContent=`${nextEvent.name} at Local: ${local} | Server: ${server} (in ${formatCountdown(diff)})`;
-    // Browser Notification
-    if(Notification.permission==="granted" && diff<=5*60*1000){
-      new Notification(`${nextEvent.name} is starting soon!`);
+    if(diff<=5*60*1000 && diff>0){
+      if(Notification.permission==="granted"){
+        new Notification(`${nextEvent.name} starting in 5 minutes!`);
+      }
+      notifiedEvents.add(nextEvent.name);
     }
-  }else{
-    upNextDiv.textContent="No upcoming events";
+    if(diff<=0 && notifiedEvents.has(nextEvent.name)) notifiedEvents.delete(nextEvent.name);
   }
 }
+
+// Day/night toggle
+const toggle=document.getElementById("day-night-toggle");
+toggle.addEventListener("click",()=>{
+  document.body.classList.toggle("light");
+  toggle.textContent=document.body.classList.contains("light")?"☀️":"🌙";
+});
 
 // Initial render
 renderEvents(document.getElementById("daily-events"),e=>e.dayAbbr.length===0);
@@ -276,15 +226,8 @@ setInterval(()=>{
   showCurrentlyActiveAndNext();
 },60000);
 
-// Day/Night toggle
-const themeBtn=document.getElementById("theme-toggle");
-themeBtn.addEventListener("click",()=>{
-  document.body.classList.toggle("light");
-  themeBtn.textContent=document.body.classList.contains("light")?"☀️":"🌙";
-});
-
-// Request notification permission
-if("Notification" in window) Notification.requestPermission();
+// Request notifications
+if(Notification.permission!=="granted" && Notification.permission!=="denied") Notification.requestPermission();
 </script>
 </body>
 </html>
