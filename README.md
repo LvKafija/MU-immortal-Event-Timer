@@ -1,4 +1,4 @@
-# MU Immortal – Event Timer Tracker (EU server)
+# MU Immortal – Event Tracker (EU server)
 
 👉 **Live Demo:** [https://lvkafija.github.io/MU-immortal-Event-Timer/](https://lvkafija.github.io/MU-immortal-Event-Timer/)
 
