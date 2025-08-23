@@ -173,13 +173,11 @@ function renderActive(){
   document.getElementById("active-events").textContent = active.length ? `Currently Active: ${active.join(", ")}` : "No events active.";
 }
 
-// Initial render
 renderEvents(document.getElementById("daily-events"),e=>e.dayAbbr.length===0);
 renderEvents(document.getElementById("weekly-events"),e=>e.dayAbbr.length>0);
 renderUpNext();
 renderActive();
 
-// Update every minute
 setInterval(()=>{
   renderEvents(document.getElementById("daily-events"),e=>e.dayAbbr.length===0);
   renderEvents(document.getElementById("weekly-events"),e=>e.dayAbbr.length>0);
