@@ -5,105 +5,171 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MU Immortal - Event Timers</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #111;
-  color: #eee;
-  margin: 0;
-  padding: 20px;
-  box-sizing: border-box;
-  min-height: 100vh;
-}
-h1, h2 {
-  text-align: center;
-  color: #f39c12;
-  margin-top: 0;
-}
-.event-list {
-  display: flex;
-  gap: 40px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.event-box {
-  border: 1px solid #444;
-  padding: 15px 20px;
-  border-radius: 8px;
-  background-color: #1e1e1e;
-  min-width: 280px;
-  max-width: 450px;
-  flex: 1 1 350px;
-  box-sizing: border-box;
-}
-.event {
-  margin: 10px 0;
-  padding: 8px 5px;
-  border-bottom: 1px solid #333;
-}
-.event:last-child { border-bottom: none; }
-.event-name { font-weight: bold; font-size: 1.1em; }
-.event-time, .event-timer { font-size: 0.9em; color: #aaa; }
-#user-timezone { text-align: center; margin-bottom: 15px; font-size: 0.95em; color: #ccc; }
-.up-next { margin: 20px 0; font-size: 1.3em; color: #0f0; text-align: center; }
-.active-events { margin: 20px 0; font-size: 1.1em; color: #0af; text-align: center; }
-.progress-bar { width: 100%; height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-top: 5px; }
-.progress-bar-fill { height: 100%; background: #0f0; width: 0%; transition: width 0.5s; }
-@media (max-width:720px){.event-list{flex-direction:column;gap:25px;align-items:center;}.event-box{max-width:100%;}body{padding:15px 10px;}}
-@media (max-width:400px){body{font-size:14px;}.event-name{font-size:1em;}.event-time,.event-timer{font-size:0.85em;}}
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #111;
+    color: #eee;
+    padding: 20px;
+    margin: 0;
+    min-height: 100vh;
+    box-sizing: border-box;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  body.light {
+    background-color: #f9f9f9;
+    color: #111;
+  }
+  h1 {
+    text-align: center;
+    color: #f39c12;
+    margin-top: 0;
+  }
+  #top-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+  }
+  #theme-toggle {
+    cursor: pointer;
+    font-size: 24px;
+    user-select: none;
+  }
+  #user-timezone {
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 0.95em;
+    color: #ccc;
+  }
+  .event-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 25px;
+  }
+  .event-box {
+    border: 1px solid #444;
+    padding: 15px 20px;
+    border-radius: 8px;
+    background-color: #1e1e1e;
+    min-width: 280px;
+    max-width: 350px;
+    flex: 1 1 300px;
+    box-sizing: border-box;
+  }
+  body.light .event-box {
+    background-color: #fff;
+    border-color: #ccc;
+    color: #111;
+  }
+  .event-box h2 {
+    text-align: center;
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #f39c12;
+  }
+  .event {
+    margin: 10px 0;
+    padding: 8px 5px;
+    border-bottom: 1px solid #333;
+  }
+  body.light .event {
+    border-bottom: 1px solid #ccc;
+  }
+  .event-name {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  .event-time, .event-timer {
+    font-size: 0.9em;
+    color: #aaa;
+  }
+  body.light .event-time,
+  body.light .event-timer {
+    color: #555;
+  }
+  @media (max-width: 720px) {
+    .event-row {
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+    }
+  }
+  @media (max-width: 400px) {
+    body { font-size: 14px; }
+    .event-name { font-size: 1em; }
+    .event-time, .event-timer { font-size: 0.85em; }
+  }
 </style>
 </head>
 <body>
-
+<div id="top-controls">
+  <div id="theme-toggle" title="Toggle Day/Night">🌙</div>
+</div>
 <h1>MU Immortal - Event Timers (UTC+1)</h1>
 <div id="user-timezone"></div>
-<div id="up-next" class="up-next"></div>
-<div id="active-events" class="active-events"></div>
-
-<div class="event-list">
-  <div id="daily-events" class="event-box"><h2>Daily Events</h2></div>
-  <div id="weekly-events" class="event-box"><h2>Weekly Events</h2></div>
+<div class="event-row">
+  <div id="currently-active" class="event-box">
+    <h2>Currently Active Events</h2>
+    <div id="active-events">No active events</div>
+  </div>
+  <div id="next-event-box" class="event-box">
+    <h2>Next Event</h2>
+    <div id="up-next">No upcoming events</div>
+  </div>
+</div>
+<div class="event-row">
+  <div id="daily-events" class="event-box">
+    <h2>Daily Events</h2>
+  </div>
+  <div id="weekly-events" class="event-box">
+    <h2>Weekly Events</h2>
+  </div>
 </div>
 
 <script>
 const events = [
-  { name:"Blood Castle", times: generateEvery2Hours("01:00","23:00"), duration:15, dayAbbr:[] },
-  { name:"Devil Square", times: generateEvery2Hours("00:00","22:00"), duration:15, dayAbbr:[] },
-  { name:"Red Dragon Invasion", times:["10:30","13:30","16:30","21:30"], duration:20, dayAbbr:[] },
-  { name:"Guild Master Event", times:["11:30","19:30"], duration:30, dayAbbr:[] },
-  { name:"Minion EXP +30%", times:["00:00"], duration:480, dayAbbr:[] },
-  { name:"Cross-server 3v3", times:["12:00","23:30"], dayAbbr:[] },
-  { name:"Crywolf Fortress", times:["20:30"], duration:15, dayAbbr:["Mon"] },
-  { name:"Chaos Castle", times:["20:00"], duration:15, dayAbbr:["Tue"] },
-  { name:"Siege War", times:["20:00"], duration:30, dayAbbr:["Wed","Sat"] },
-  { name:"Divine Trade Route", times:["20:00","20:30"], dayAbbr:["Mon","Fri"] },
-  { name:"Ethereal Pact", times:["11:00","15:00","19:00","23:00"], dayAbbr:[] },
-  { name:"Vulcanus", times:["20:00"], duration:15, dayAbbr:["Wed","Fri"] }
+  { name: "Blood Castle", times: generateEvery2Hours("01:00","23:00"), durationMinutes: 15, dayAbbr: [] },
+  { name: "Devil Square", times: generateEvery2Hours("00:00","22:00"), durationMinutes: 15, dayAbbr: [] },
+  { name: "Red Dragon Invasion", times: ["10:30","13:30","16:30","21:30"], durationMinutes: 30, dayAbbr: [] },
+  { name: "Guild Master Event", times: ["11:30","19:30"], durationMinutes: 30, dayAbbr: [] },
+  { name: "Minion EXP +30%", times: ["00:00"], durationMinutes: 8*60, dayAbbr: [] },
+  { name: "Cross-server 3v3", times: ["12:00","23:30"], durationMinutes: 30, dayAbbr: [] },
+  { name: "Crywolf Fortress", times: ["20:30"], durationMinutes: 30, dayAbbr: ["Mon"] },
+  { name: "Chaos Castle", times: ["20:00"], durationMinutes: 30, dayAbbr: ["Tue"] },
+  { name: "Siege War", times: ["20:00"], durationMinutes: 30, dayAbbr: ["Wed","Sat"] },
+  { name: "Divine Trade Route Event", times: ["20:00","20:30"], durationMinutes: 30, dayAbbr: ["Mon","Fri"] },
+  { name: "Ethereal Pact Event", times: ["11:00","15:00","19:00","23:00"], durationMinutes: 30, dayAbbr: [] }
 ];
 
-
 function generateEvery2Hours(start,end){
-  const times=[]; let [sh,sm]=start.split(":").map(Number); let [eh,em]=end.split(":").map(Number);
-  for(let h=sh; h<=eh; h+=2){ times.push(`${String(h).padStart(2,"0")}:${String(sm).padStart(2,"0")}`);}
+  const times=[];
+  let [sh,sm]=start.split(":").map(Number);
+  let [eh,em]=end.split(":").map(Number);
+  for(let h=sh;h<=eh;h+=2){
+    times.push(`${String(h).padStart(2,"0")}:${String(sm).padStart(2,"0")}`);
+  }
   return times;
 }
 
 const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-document.getElementById("user-timezone").textContent = `Your Timezone: ${userTz}`;
+document.getElementById("user-timezone").textContent=`Your Timezone: ${userTz}`;
 
-function getEventDate(dayDate,timeStr){
+function getEventDateFromUTCPlus1(dayDate,timeStr){
   const [hour,minute]=timeStr.split(":").map(Number);
-  const utcDate=new Date(Date.UTC(dayDate.getFullYear(),dayDate.getMonth(),dayDate.getDate(),hour-1,minute));
-  return new Date(utcDate.getTime());
+  const utcDate = new Date(Date.UTC(dayDate.getFullYear(),dayDate.getMonth(),dayDate.getDate(),hour-1,minute));
+  return utcDate;
 }
 
 function getNextEventTime(event){
   const now=new Date();
   for(let offset=0;offset<8;offset++){
-    const day=new Date(now); day.setDate(now.getDate()+offset);
-    const dayAbbr=day.toLocaleDateString('en-US',{weekday:'short'});
+    const day=new Date(now);
+    day.setDate(now.getDate()+offset);
+    const dayAbbr = day.toLocaleDateString('en-US',{weekday:'short'});
     if(event.dayAbbr.length && !event.dayAbbr.includes(dayAbbr)) continue;
     for(const t of event.times){
-      const dt=getEventDate(day,t);
+      const dt = getEventDateFromUTCPlus1(day,t);
       if(dt>=now) return dt;
     }
   }
@@ -114,8 +180,9 @@ function formatTimeLocal(date){
   return date.toLocaleTimeString([], {hour12:false,hour:"2-digit",minute:"2-digit"});
 }
 function formatTimeUTCPlus1(date){
-  let h=date.getUTCHours()+1; if(h>=24) h-=24;
-  return `${String(h).padStart(2,"0")}:${String(date.getUTCMinutes()).padStart(2,"0")}`;
+  let hour=date.getUTCHours()+1;
+  if(hour>=24) hour-=24;
+  return `${String(hour).padStart(2,"0")}:${String(date.getUTCMinutes()).padStart(2,"0")}`;
 }
 function formatCountdown(ms){
   const totalSeconds=Math.floor(ms/1000);
@@ -128,7 +195,7 @@ function formatCountdown(ms){
 function renderEvents(container,filterFn){
   container.querySelectorAll(".event").forEach(e=>e.remove());
   for(const event of events.filter(filterFn)){
-    const nextTime=getNextEventTime(event);
+    const nextTime = getNextEventTime(event);
     if(!nextTime) continue;
     const localTime=formatTimeLocal(nextTime);
     const utcPlus1Time=formatTimeUTCPlus1(nextTime);
@@ -144,65 +211,79 @@ function renderEvents(container,filterFn){
   }
 }
 
-function getActiveEvents(){
-  const now=new Date(); let active=[];
-  for(const e of events){
-    for(const t of e.times){
-      const start=getEventDate(new Date(),t);
-      const end=new Date(start.getTime()+(e.duration||15)*60*1000);
-      if(now>=start && now<=end) active.push(`${e.name} (${Math.floor((end-now)/60000)} min left)`);
+function showCurrentlyActiveAndNext(){
+  const now=new Date();
+  let nextEvent=null;
+  let nextTime=null;
+  const activeDiv=document.getElementById("active-events");
+  const upNextDiv=document.getElementById("up-next");
+  let activeEvents=[];
+
+  for(const event of events){
+    for(const t of event.times){
+      const start=getEventDateFromUTCPlus1(now,t);
+      const end=new Date(start.getTime()+event.durationMinutes*60000);
+      if(event.dayAbbr.length){
+        const dayAbbr=now.toLocaleDateString('en-US',{weekday:'short'});
+        if(!event.dayAbbr.includes(dayAbbr)) continue;
+      }
+      if(start<=now && now<=end){
+        activeEvents.push({name:event.name,end});
+      }
+      if(start>now && (!nextTime || start<nextTime)){
+        nextTime=start;
+        nextEvent=event;
+      }
     }
   }
-  return active;
-}
 
-function showUpNext(){
-  const now=new Date(); let soonest=null; let soonestEvent=null;
-  for(const e of events){
-    const next=getNextEventTime(e);
-    if(!next) continue;
-    if(!soonest || next<soonest){ soonest=next; soonestEvent=e;}
+  if(activeEvents.length){
+    activeDiv.innerHTML="";
+    for(const e of activeEvents){
+      const remaining=e.end-now;
+      const div=document.createElement("div");
+      div.textContent=`${e.name} - ${formatCountdown(remaining)} remaining`;
+      activeDiv.appendChild(div);
+    }
+  }else{
+    activeDiv.textContent="No active events";
   }
-  if(soonest && soonestEvent){
-    const local=formatTimeLocal(soonest);
-    const server=formatTimeUTCPlus1(soonest);
-    const diff=soonest-now;
-    const barPercent=Math.min(100,Math.max(0,(1-diff/(3600*1000))*100));
-    upNextDiv.innerHTML=`Next Event: <strong>${soonestEvent.name}</strong> at Local: ${local} | Server: ${server} (in ${formatCountdown(diff)})
-      <div class="progress-bar"><div class="progress-bar-fill" style="width:${barPercent}%"></div></div>`;
-  }else upNextDiv.textContent="No upcoming events.";
+
+  if(nextEvent && nextTime){
+    const local=formatTimeLocal(nextTime);
+    const server=formatTimeUTCPlus1(nextTime);
+    const diff=nextTime-now;
+    upNextDiv.textContent=`${nextEvent.name} at Local: ${local} | Server: ${server} (in ${formatCountdown(diff)})`;
+    // Browser Notification
+    if(Notification.permission==="granted" && diff<=5*60*1000){
+      new Notification(`${nextEvent.name} is starting soon!`);
+    }
+  }else{
+    upNextDiv.textContent="No upcoming events";
+  }
 }
 
-const upNextDiv=document.getElementById("up-next");
-const activeDiv=document.getElementById("active-events");
+// Initial render
+renderEvents(document.getElementById("daily-events"),e=>e.dayAbbr.length===0);
+renderEvents(document.getElementById("weekly-events"),e=>e.dayAbbr.length>0);
+showCurrentlyActiveAndNext();
 
-function updateAll(){
+// Update every minute
+setInterval(()=>{
   renderEvents(document.getElementById("daily-events"),e=>e.dayAbbr.length===0);
   renderEvents(document.getElementById("weekly-events"),e=>e.dayAbbr.length>0);
-  const active=getActiveEvents();
-  activeDiv.textContent=active.length?"Active Events: "+active.join(", "):"No active events currently";
-  showUpNext();
-  notifyNextEvent();
-}
+  showCurrentlyActiveAndNext();
+},60000);
 
-let lastNotified=null;
-function notifyNextEvent(){
-  if(!("Notification" in window)) return;
-  if(Notification.permission!=="granted") Notification.requestPermission();
-  const now=new Date();
-  for(const e of events){
-    const next=getNextEventTime(e);
-    if(!next) continue;
-    const diff=Math.floor((next-now)/60000);
-    if(diff<=5 && (!lastNotified || lastNotified.getTime()!==next.getTime())){
-      new Notification(`${e.name} starts in ${diff} minutes!`);
-      lastNotified=next;
-    }
-  }
-}
+// Day/Night toggle
+const themeBtn=document.getElementById("theme-toggle");
+themeBtn.addEventListener("click",()=>{
+  document.body.classList.toggle("light");
+  themeBtn.textContent=document.body.classList.contains("light")?"☀️":"🌙";
+});
 
-updateAll();
-setInterval(updateAll,60000);
+// Request notification permission
+if("Notification" in window) Notification.requestPermission();
 </script>
 </body>
 </html>
