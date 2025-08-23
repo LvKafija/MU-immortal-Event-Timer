@@ -183,6 +183,37 @@ setInterval(()=>{
   renderUpNext();
   renderActive();
 },60000);
+
+if ("Notification" in window && Notification.permission !== "granted") {
+  Notification.requestPermission();
+}
+
+function sendNotification(eventName, timeLeft) {
+  if (Notification.permission === "granted") {
+    new Notification("MU Immortal Event Reminder", {
+      body: `${eventName} starts in ${timeLeft} minutes!`,
+      icon: "https://lvkafija.github.io/MU-immortal-Event-Timer/icon.png" // optional custom icon
+    });
+  }
+}
+
+events.forEach(event => {
+  event.times.forEach(time => {
+    const eventStart = new Date();
+    const [hours, minutes] = time.split(":").map(Number);
+    eventStart.setHours(hours, minutes, 0, 0);
+
+    const diff = (eventStart - now) / 60000;
+
+    if (diff > 0 && diff <= 10 && !event.notified) {
+      sendNotification(event.name, Math.floor(diff));
+      event.notified = true; // prevent spamming
+    }
+
+    if (diff < -1) event.notified = false;
+  });
+});
+
 </script>
 </body>
 </html>
