@@ -1,258 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MU Immortal - Event Timers</title>
+  <meta charset="UTF-8">
+  <title>MU Immortal - Event Timers (UTC+1)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #eee;
+      background: #1e1e1e;
+      color: #fff;
+      text-align: center;
       padding: 20px;
-      margin: 0;
-      min-height: 100vh;
-      box-sizing: border-box;
     }
-    h1, h2 {
+    h1 {
       text-align: center;
-      color: #f39c12;
-      margin-top: 0;
     }
-
-    .event-list {
+    .container {
       display: flex;
-      gap: 40px;
-      flex-wrap: wrap;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
     }
-
-    .event-box {
-      border: 1px solid #444;
-      padding: 15px 20px;
-      border-radius: 8px;
-      background-color: #1e1e1e;
-      min-width: 280px;
-      max-width: 450px;
-      flex: 1 1 350px;
-      box-sizing: border-box;
+    .box {
+      background: #2c2c2c;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      max-width: 500px;
+      width: 100%;
     }
-
     .event {
-      margin: 10px 0;
-      padding: 8px 5px;
-      border-bottom: 1px solid #333;
+      margin: 5px 0;
     }
-    .event:last-child {
-      border-bottom: none;
-    }
-
-    .event-name {
+    .highlight {
+      color: #00ffcc;
       font-weight: bold;
-      font-size: 1.1em;
     }
-
-    .event-time, .event-timer {
-      font-size: 0.9em;
-      color: #aaa;
-    }
-
-    .up-next {
-      margin: 20px 0 30px 0;
-      font-size: 1.3em;
-      color: #0f0;
-      text-align: center;
-    }
-
-    #user-timezone {
-      text-align: center;
-      margin-bottom: 15px;
-      font-size: 0.95em;
-      color: #ccc;
-    }
-
-    @media (max-width: 720px) {
-      .event-list {
-        flex-direction: column;
-        gap: 25px;
-        align-items: center;
+    @media (min-width: 768px) {
+      .container {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
       }
-      .event-box {
-        max-width: 100%;
-      }
-      body {
-        padding: 15px 10px;
-      }
-      .up-next {
-        font-size: 1.4em;
-        margin-bottom: 25px;
-      }
-    }
-
-    @media (max-width: 400px) {
-      body {
-        font-size: 14px;
-      }
-      .event-name {
-        font-size: 1em;
-      }
-      .event-time, .event-timer {
-        font-size: 0.85em;
-      }
-      .up-next {
-        font-size: 1.2em;
+      .box {
+        flex: 1 1 300px;
+        max-width: 400px;
       }
     }
   </style>
 </head>
 <body>
-  <h1>MU Immortal - Event Timers</h1>
-  <div id="up-next" class="up-next"></div>
-  <div id="user-timezone"></div>
-  <div class="event-list">
-    <div id="daily-events" class="event-box">
-      <h2>Daily Events</h2>
+  <h1>MU Immortal - Event Timers (UTC+1)</h1>
+  <div class="container">
+    <div class="box" id="active-events">
+      <h2>Currently Active</h2>
+      <div id="active-list">Checking...</div>
     </div>
-    <div id="weekly-events" class="event-box">
-      <h2>Weekly Events</h2>
+    <div class="box" id="up-next">
+      <h2>Up Next</h2>
+      <div id="up-next-event">Checking...</div>
+    </div>
+    <div class="box" id="all-events">
+      <h2>All Events</h2>
+      <div id="event-list">Loading...</div>
     </div>
   </div>
 
-  <script>
-    const events = [
-      { name: "Blood Castle", times: generateEvery2Hours("01:00", "23:00"), dayAbbr: [] },
-      { name: "Devil Square", times: generateEvery2Hours("00:00", "22:00"), dayAbbr: [] },
-      { name: "Red Dragon Invasion", times: ["10:30", "13:30", "16:30", "21:30"], dayAbbr: [] },
-      { name: "Guild Master Event", times: ["11:30", "19:30"], dayAbbr: [] },
-      { name: "Minion EXP +30%", times: ["00:00"], durationHours: 8, dayAbbr: [] },
-      { name: "Cross-server 3v3", times: ["12:00", "23:30"], dayAbbr: [] },
-      { name: "Crywolf Fortress", times: ["20:30"], dayAbbr: ["Mon"] },
-      { name: "Chaos Castle", times: ["20:00"], dayAbbr: ["Tue"] },
-      { name: "Siege War", times: ["20:00"], dayAbbr: ["Wed", "Sat"] },
-    ];
+<script>
+const events = [
+  { name: "Blood Castle", times: ["01:00","03:00","05:00","07:00","09:00","11:00","13:00","15:00","17:00","19:00","21:00","23:00"], duration: 15 },
+  { name: "Devil Square", times: ["01:00","03:00","05:00","07:00","09:00","11:00","13:00","15:00","17:00","19:00","21:00","23:00"], duration: 15 },
+  { name: "Chaos Castle", times: ["12:00","18:00","22:00"] },
+  { name: "Illusion Temple", times: ["14:00","20:00","00:00"] },
+  { name: "Red Dragon Invasion", times: ["09:00","13:00","17:00","21:00"] },
+  { name: "Golden Invasion", times: ["10:00","16:00","22:00"], duration: 15 },
+  { name: "White Wizard Invasion", times: ["11:30","19:30","23:30"] },
+  { name: "Vulcanus Event", times: ["Wed 20:00","Fri 20:00"] },
+  { name: "Cross-Server Dragon", times: ["10:30","13:30","16:30","21:30"] },
+  { name: "Divine Trade Route", times: ["Mon 20:00","Fri 20:30"] },
+  { name: "Ethereal Pact", times: ["11:00","15:00","19:00","23:00"] },
+];
 
-    function generateEvery2Hours(start, end) {
-      const times = [];
-      let [sh, sm] = start.split(":").map(Number);
-      let [eh, em] = end.split(":").map(Number);
-      for (let h = sh; h <= eh; h += 2) {
-        times.push(`${String(h).padStart(2, "0")}:${String(sm).padStart(2, "0")}`);
+function parseTime(timeStr) {
+  const now = new Date();
+  let day = now.getUTCDay();
+  let [h,m] = timeStr.split(":").map(Number);
+
+  if (timeStr.includes(" ")) {
+    const [dayStr, hm] = timeStr.split(" ");
+    [h,m] = hm.split(":").map(Number);
+    const days = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    day = days.indexOf(dayStr);
+  }
+  return { day, hour: h, minute: m };
+}
+
+function getNextEvent(nowUTC) {
+  let next = null;
+  let nextTime = null;
+
+  events.forEach(ev => {
+    ev.times.forEach(t => {
+      const { day, hour, minute } = parseTime(t);
+      const eventTime = new Date(Date.UTC(nowUTC.getUTCFullYear(), nowUTC.getUTCMonth(), nowUTC.getUTCDate(), hour, minute));
+
+      while (eventTime.getUTCDay() !== day && t.includes(" ")) {
+        eventTime.setUTCDate(eventTime.getUTCDate() + 1);
       }
-      return times;
-    }
+      if (eventTime < nowUTC) eventTime.setUTCDate(eventTime.getUTCDate() + 1);
 
-    const userTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    document.getElementById("user-timezone").textContent = `Your Timezone: ${userTz}`;
-
-    const upNextDiv = document.getElementById("up-next");
-
-    function getEventDateFromUTCPlus1(dayDate, timeStr) {
-      const [hour, minute] = timeStr.split(":").map(Number);
-      const utcDate = new Date(Date.UTC(
-        dayDate.getFullYear(),
-        dayDate.getMonth(),
-        dayDate.getDate(),
-        hour - 1,
-        minute,
-        0,
-        0
-      ));
-      return new Date(utcDate.getTime());
-    }
-
-    function getNextEventTimes(event) {
-      const now = new Date();
-      const upcoming = [];
-
-      for (let offset = 0; offset < 8; offset++) {
-        const day = new Date(now);
-        day.setDate(now.getDate() + offset);
-        const dayAbbr = day.toLocaleDateString('en-US', { weekday: 'short' });
-        if (event.dayAbbr.length && !event.dayAbbr.includes(dayAbbr)) continue;
-
-        for (const t of event.times) {
-          const dt = getEventDateFromUTCPlus1(day, t);
-          if (dt >= now) upcoming.push(dt);
-        }
-        if (upcoming.length) break;
+      if (!nextTime || eventTime < nextTime) {
+        nextTime = eventTime;
+        next = { name: ev.name, time: eventTime };
       }
-      return upcoming.sort((a,b) => a-b);
-    }
+    });
+  });
+  return next;
+}
 
-    function formatTimeLocal(date) {
-      return date.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" });
-    }
-    function formatTimeUTCPlus1(date) {
-      const utcHour = date.getUTCHours();
-      const utcMin = date.getUTCMinutes();
-      let hour = utcHour + 1;
-      if (hour >= 24) hour -= 24;
-      return `${String(hour).padStart(2,"0")}:${String(utcMin).padStart(2,"0")}`;
-    }
-
-    function formatCountdown(ms) {
-      const totalSeconds = Math.floor(ms / 1000);
-      const days = Math.floor(totalSeconds / 86400);
-      const hours = Math.floor((totalSeconds % 86400) / 3600);
-      const minutes = Math.floor((totalSeconds % 3600) / 60);
-      return `${days}d ${hours}h ${minutes}m`;
-    }
-
-    function renderEvents(container, filterFn) {
-      container.querySelectorAll(".event").forEach(e => e.remove());
-      for (const event of events.filter(filterFn)) {
-        const nextTimes = getNextEventTimes(event);
-        if (!nextTimes.length) continue;
-
-        const localTime = formatTimeLocal(nextTimes[0]);
-        const utcPlus1Time = formatTimeUTCPlus1(nextTimes[0]);
-        const timeDiff = nextTimes[0] - new Date();
-
-        const div = document.createElement("div");
-        div.className = "event";
-        div.innerHTML = `
-          <div class="event-name">${event.name}</div>
-          <div class="event-time">Local: ${localTime} | server time: ${utcPlus1Time}</div>
-          <div class="event-timer">Starts in: ${formatCountdown(timeDiff)}</div>
-        `;
-        container.appendChild(div);
+function getActiveEvents(nowUTC) {
+  let active = [];
+  events.forEach(ev => {
+    if (!ev.duration) return;
+    ev.times.forEach(t => {
+      const { hour, minute } = parseTime(t);
+      const start = new Date(Date.UTC(nowUTC.getUTCFullYear(), nowUTC.getUTCMonth(), nowUTC.getUTCDate(), hour, minute));
+      const end = new Date(start.getTime() + ev.duration*60000);
+      if (nowUTC >= start && nowUTC <= end) {
+        active.push(ev.name);
       }
-    }
+    });
+  });
+  return active;
+}
 
-    function showNextUpcoming() {
-      const now = new Date();
-      let soonest = null;
-      let soonestEvent = null;
+function render() {
+  const nowUTC = new Date();
+  
+  const active = getActiveEvents(nowUTC);
+  document.getElementById("active-list").innerHTML = active.length ? active.join(", ") : "None";
+  
+  const next = getNextEvent(nowUTC);
+  if (next) {
+    const timeStr = next.time.toUTCString().slice(17,22); 
+    document.getElementById("up-next-event").innerHTML = `<span class="highlight">${next.name}</span> at ${timeStr} UTC`;
+  }
+  let listHTML = "";
+  events.forEach(ev => {
+    listHTML += `<div class="event"><span class="highlight">${ev.name}</span>: ${ev.times.join(", ")}</div>`;
+  });
+  document.getElementById("event-list").innerHTML = listHTML;
+}
 
-      for (const event of events) {
-        const upcoming = getNextEventTimes(event);
-        if (!upcoming.length) continue;
-        if (!soonest || upcoming[0] < soonest) {
-          soonest = upcoming[0];
-          soonestEvent = event;
-        }
-      }
-
-      if (soonestEvent && soonest) {
-        const localTime = formatTimeLocal(soonest);
-        const utcPlus1Time = formatTimeUTCPlus1(soonest);
-        const timeDiff = soonest - now;
-
-        upNextDiv.innerHTML = `Next Event: <strong>${soonestEvent.name}</strong> at Local: ${localTime} | server time: ${utcPlus1Time} (in ${formatCountdown(timeDiff)})`;
-      } else {
-        upNextDiv.textContent = "No upcoming events.";
-      }
-    }
-
-    showNextUpcoming();
-    renderEvents(document.getElementById("daily-events"), e => e.dayAbbr.length === 0);
-    renderEvents(document.getElementById("weekly-events"), e => e.dayAbbr.length > 0);
-
-    setInterval(() => {
-      showNextUpcoming();
-      renderEvents(document.getElementById("daily-events"), e => e.dayAbbr.length === 0);
-      renderEvents(document.getElementById("weekly-events"), e => e.dayAbbr.length > 0);
-    }, 60000);
-  </script>
+setInterval(render, 1000);
+render();
+</script>
 </body>
 </html>
