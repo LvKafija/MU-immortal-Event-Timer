@@ -129,17 +129,18 @@
 
 <script>
 const events = [
-  { name: "Blood Castle", times: generateEvery2Hours("01:00","23:00"), durationMinutes: 15, dayAbbr: [] },
-  { name: "Devil Square", times: generateEvery2Hours("00:00","22:00"), durationMinutes: 15, dayAbbr: [] },
-  { name: "Red Dragon Invasion", times: ["10:30","13:30","16:30","21:30"], durationMinutes: 30, dayAbbr: [] },
-  { name: "Guild Master Event", times: ["11:30","19:30"], durationMinutes: 30, dayAbbr: [] },
-  { name: "Minion EXP +30%", times: ["00:00"], durationMinutes: 8*60, dayAbbr: [] },
-  { name: "Cross-server 3v3", times: ["12:00","23:30"], durationMinutes: 30, dayAbbr: [] },
-  { name: "Crywolf Fortress", times: ["20:30"], durationMinutes: 30, dayAbbr: ["Mon"] },
-  { name: "Chaos Castle", times: ["20:00"], durationMinutes: 30, dayAbbr: ["Tue"] },
-  { name: "Siege War", times: ["20:00"], durationMinutes: 30, dayAbbr: ["Wed","Sat"] },
-  { name: "Divine Trade Route Event", times: ["20:00","20:30"], durationMinutes: 30, dayAbbr: ["Mon","Fri"] },
-  { name: "Ethereal Pact Event", times: ["11:00","15:00","19:00","23:00"], durationMinutes: 30, dayAbbr: [] }
+  { name:"Blood Castle", times: generateEvery2Hours("01:00","23:00"), duration:15, dayAbbr:[] },
+  { name:"Devil Square", times: generateEvery2Hours("00:00","22:00"), duration:15, dayAbbr:[] },
+  { name:"Red Dragon Invasion", times:["10:30","13:30","16:30","21:30"], duration:20, dayAbbr:[] },
+  { name:"Guild Master Event", times:["11:30","19:30"], duration:30, dayAbbr:[] },
+  { name:"Minion EXP +30%", times:["00:00"], duration:480, dayAbbr:[] },
+  { name:"Cross-server 3v3", times:["12:00","23:30"], dayAbbr:[] },
+  { name:"Crywolf Fortress", times:["20:30"], duration:15, dayAbbr:["Mon"] },
+  { name:"Chaos Castle", times:["20:00"], duration:15, dayAbbr:["Tue"] },
+  { name:"Siege War", times:["20:00"], duration:30, dayAbbr:["Wed","Sat"] },
+  { name:"Divine Trade Route", times:["20:00","20:30"], dayAbbr:["Mon","Fri"] },
+  { name:"Ethereal Pact", times:["11:00","15:00","19:00","23:00"], dayAbbr:[] },
+  { name:"Vulcanus", times:["20:00"], duration:15, dayAbbr:["Wed","Fri"] }
 ];
 
 function generateEvery2Hours(start,end){
