@@ -171,9 +171,13 @@ function showCurrentlyActiveAndNext(){
       const eventStart=getEventDateFromUTCPlus1(now,t);
       let duration=(event.duration||0)*60*1000;
       if(duration===0) duration=0;
-      if(now>=eventStart && now<=eventStart+duration){
-        activeEvents.push({name:event.name,remaining:eventStart+duration-now});
-      }
+      if (now >= eventStart && now <= eventStart.getTime() + duration) {
+      activeEvents.push({
+      name: event.name,
+      remaining: eventStart.getTime() + duration - now
+  });
+}
+
     }
   }
   const upNextDiv=document.getElementById("up-next");
