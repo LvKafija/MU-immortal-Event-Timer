@@ -23,7 +23,7 @@ A live event timer for **MU Immortal**, showing daily, weekly, currently active,
 | Red Dragon Invasion | 10:30, 13:30, 16:30, 21:30 | 20 |
 | Guild Master Event | 11:30, 19:30 | 30 |
 | Minion EXP +30% | 00:00 | 480 |
-| Cross-server 3v3 | 12:00, 23:30 | — |
+| Cross-server 3v3 | 12:00, 23:30 | 150 |
 | Ethereal Pact | 11:00, 15:00, 19:00, 23:00 | — |
 
 ### Weekly Events
