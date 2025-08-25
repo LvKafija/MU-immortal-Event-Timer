@@ -158,7 +158,6 @@ function renderEvents(container, filterFn){
   }
 }
 
-// ✅ Fixed Active + Up Next function
 function showCurrentlyActiveAndNext(){
   const now = new Date();
   let nextEvent = null;
@@ -173,7 +172,6 @@ function showCurrentlyActiveAndNext(){
       nextEvent = event;
     }
 
-    // Check active events
     for (const t of event.times) {
       const day = new Date(now);
       const eventStart = getEventDateFromUTCPlus1(day, t);
@@ -189,7 +187,6 @@ function showCurrentlyActiveAndNext(){
     }
   }
 
-  // Up Next display
   const upNextDiv = document.getElementById("up-next");
   if (nextEvent && nextTime) {
     const local = formatTimeLocal(nextTime);
@@ -199,7 +196,6 @@ function showCurrentlyActiveAndNext(){
     upNextDiv.textContent = "No upcoming events";
   }
 
-  // Active Events display
   const activeDiv = document.getElementById("active-events");
   if (activeEvents.length) {
     activeDiv.innerHTML = activeEvents
@@ -209,7 +205,6 @@ function showCurrentlyActiveAndNext(){
     activeDiv.textContent = "No active events";
   }
 
-  // Notifications 5 min before
   if (nextEvent && nextTime && !notifiedEvents.has(nextEvent.name)) {
     const diff = nextTime - now;
     if (diff <= 5*60*1000 && diff > 0) {
@@ -224,26 +219,21 @@ function showCurrentlyActiveAndNext(){
   }
 }
 
-// Theme toggle
 const toggle=document.getElementById("day-night-toggle");
 toggle.addEventListener("click",()=>{
   document.body.classList.toggle("light");
   toggle.textContent=document.body.classList.contains("light")?"☀️":"🌙";
 });
 
-// Initial render
 renderEvents(document.getElementById("daily-events"),e=>e.dayAbbr.length===0);
 renderEvents(document.getElementById("weekly-events"),e=>e.dayAbbr.length>0);
 showCurrentlyActiveAndNext();
 
-// Refresh every minute
 setInterval(()=>{
   renderEvents(document.getElementById("daily-events"),e=>e.dayAbbr.length===0);
   renderEvents(document.getElementById("weekly-events"),e=>e.dayAbbr.length>0);
   showCurrentlyActiveAndNext();
 },60000);
-
-// Ask for notification permission
 if(Notification.permission!=="granted" && Notification.permission!=="denied") {
   Notification.requestPermission();
 }
