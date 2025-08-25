@@ -167,14 +167,18 @@ function showCurrentlyActiveAndNext(){
     if(upcoming && (!nextTime || upcoming<nextTime)){
       nextTime=upcoming; nextEvent=event;
     }
-    for(const t of event.times){
-      const eventStart=getEventDateFromUTCPlus1(now,t);
-      let duration=(event.duration||0)*60*1000;
-      if(duration===0) duration=0;
-      if (now >= eventStart && now <= eventStart.getTime() + duration) {
-      activeEvents.push({
-      name: event.name,
-      remaining: eventStart.getTime() + duration - now
+    for (const t of event.times) {
+  const eventStart = getEventDateFromUTCPlus1(day, t);
+  const eventEnd = new Date(eventStart.getTime() + (event.duration || 0) * 60000);
+
+  // 🔹 Enforce day-of-week check
+  const eventDay = eventStart.toLocaleDateString("en-US", { weekday: "short" });
+  if (event.dayAbbr.length && !event.dayAbbr.includes(eventDay)) {
+    continue; // skip if today isn’t a valid event day
+  }
+
+  if (now >= eventStart && now <= eventEnd) {
+    activeEvents.push({ event, eventStart, eventEnd
   });
 }
 
