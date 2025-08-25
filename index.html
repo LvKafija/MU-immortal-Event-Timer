@@ -140,7 +140,6 @@ function formatTimeLocal(date){return date.toLocaleTimeString([], {hour12:false,
 function formatTimeUTCPlus1(date){let hour=date.getUTCHours()+1;if(hour>=24)hour-=24;return `${String(hour).padStart(2,"0")}:${String(date.getUTCMinutes()).padStart(2,"0")}`;}
 function formatCountdown(ms){const totalSeconds=Math.floor(ms/1000);const days=Math.floor(totalSeconds/86400);const hours=Math.floor((totalSeconds%86400)/3600);const minutes=Math.floor((totalSeconds%3600)/60);return `${days}d ${hours}h ${minutes}m`;}
 
-// Renders events in the boxes
 function renderEvents(container, filterFn){
   container.querySelectorAll(".event").forEach(e=>e.remove());
   for(const event of events.filter(filterFn)){
@@ -165,7 +164,6 @@ function showCurrentlyActiveAndNext(){
   const activeEvents = [];
 
   for (const event of events) {
-    // Find next event
     const upcoming = getNextEventTime(event);
     if (upcoming && (!nextTime || upcoming < nextTime)) {
       nextTime = upcoming;
