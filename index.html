@@ -100,8 +100,8 @@ const events = [
   { name:"Crywolf Fortress", times:["20:30"], duration:15, dayAbbr:["Mon"] },
   { name:"Chaos Castle", times:["20:00"], duration:15, dayAbbr:["Tue"] },
   { name:"Siege War", times:["20:00"], duration:30, dayAbbr:["Wed","Sat"] },
-  { name:"Divine Trade Route", times:["20:00","20:30"], dayAbbr:["Mon","Fri"] },
-  { name:"Ethereal Pact", times:["11:00","15:00","19:00","23:00"], dayAbbr:[] },
+  { name:"Divine Trade Route", times:["20:00","20:30"], duration:20, dayAbbr:["Mon","Fri"] },
+  { name:"Ethereal Pact", times:["11:00","15:00","19:00","23:00"], duration:20, dayAbbr:[] },
   { name:"Vulcanus", times:["20:00"], duration:15, dayAbbr:["Wed","Fri"] }
 ];
 
@@ -140,6 +140,7 @@ function formatTimeLocal(date){return date.toLocaleTimeString([], {hour12:false,
 function formatTimeUTCPlus1(date){let hour=date.getUTCHours()+1;if(hour>=24)hour-=24;return `${String(hour).padStart(2,"0")}:${String(date.getUTCMinutes()).padStart(2,"0")}`;}
 function formatCountdown(ms){const totalSeconds=Math.floor(ms/1000);const days=Math.floor(totalSeconds/86400);const hours=Math.floor((totalSeconds%86400)/3600);const minutes=Math.floor((totalSeconds%3600)/60);return `${days}d ${hours}h ${minutes}m`;}
 
+// Renders events in the boxes
 function renderEvents(container, filterFn){
   container.querySelectorAll(".event").forEach(e=>e.remove());
   for(const event of events.filter(filterFn)){
@@ -157,68 +158,95 @@ function renderEvents(container, filterFn){
   }
 }
 
+// ✅ Fixed Active + Up Next function
 function showCurrentlyActiveAndNext(){
-  const now=new Date();
-  let nextEvent=null;
-  let nextTime=null;
-  const activeEvents=[];
-  for(const event of events){
-    const upcoming=getNextEventTime(event);
-    if(upcoming && (!nextTime || upcoming<nextTime)){
-      nextTime=upcoming; nextEvent=event;
+  const now = new Date();
+  let nextEvent = null;
+  let nextTime = null;
+  const activeEvents = [];
+
+  for (const event of events) {
+    // Find next event
+    const upcoming = getNextEventTime(event);
+    if (upcoming && (!nextTime || upcoming < nextTime)) {
+      nextTime = upcoming;
+      nextEvent = event;
     }
+
+    // Check active events
     for (const t of event.times) {
-  const eventStart = getEventDateFromUTCPlus1(day, t);
-  const eventEnd = new Date(eventStart.getTime() + (event.duration || 0) * 60000);
+      const day = new Date(now);
+      const eventStart = getEventDateFromUTCPlus1(day, t);
+      const eventEnd = new Date(eventStart.getTime() + (event.duration || 0) * 60000);
 
-  // 🔹 Enforce day-of-week check
-  const eventDay = eventStart.toLocaleDateString("en-US", { weekday: "short" });
-  if (event.dayAbbr.length && !event.dayAbbr.includes(eventDay)) {
-    continue; // skip if today isn’t a valid event day
-  }
+      const eventDay = eventStart.toLocaleDateString("en-US", { weekday: "short" });
+      if (event.dayAbbr.length && !event.dayAbbr.includes(eventDay)) continue;
 
-  if (now >= eventStart && now <= eventEnd) {
-    activeEvents.push({ event, eventStart, eventEnd
-  });
-}
-
+      if (now >= eventStart && now <= eventEnd) {
+        const remaining = eventEnd - now;
+        activeEvents.push({ name: event.name, remaining });
+      }
     }
   }
-  const upNextDiv=document.getElementById("up-next");
-  if(nextEvent && nextTime){
-    const local=formatTimeLocal(nextTime);
-    const server=formatTimeUTCPlus1(nextTime);
-    upNextDiv.textContent=`Next Event: ${nextEvent.name} at Local ${local} | Server ${server} (${formatCountdown(nextTime-now)})`;
-  } else upNextDiv.textContent="No upcoming events";
-  const activeDiv=document.getElementById("active-events");
-  if(activeEvents.length){
-    activeDiv.innerHTML=activeEvents.map(e=>`${e.name} active for ${Math.floor(e.remaining/60000)} min`).join("<br>");
-  } else activeDiv.textContent="No active events";
-  if(nextEvent && nextTime && !notifiedEvents.has(nextEvent.name)){
-    const diff=nextTime-now;
-    if(diff<=5*60*1000 && diff>0){
-      if(Notification.permission==="granted"){
+
+  // Up Next display
+  const upNextDiv = document.getElementById("up-next");
+  if (nextEvent && nextTime) {
+    const local = formatTimeLocal(nextTime);
+    const server = formatTimeUTCPlus1(nextTime);
+    upNextDiv.textContent = `Next Event: ${nextEvent.name} at Local ${local} | Server ${server} (${formatCountdown(nextTime-now)})`;
+  } else {
+    upNextDiv.textContent = "No upcoming events";
+  }
+
+  // Active Events display
+  const activeDiv = document.getElementById("active-events");
+  if (activeEvents.length) {
+    activeDiv.innerHTML = activeEvents
+      .map(e => `${e.name} active for ${Math.floor(e.remaining/60000)} min`)
+      .join("<br>");
+  } else {
+    activeDiv.textContent = "No active events";
+  }
+
+  // Notifications 5 min before
+  if (nextEvent && nextTime && !notifiedEvents.has(nextEvent.name)) {
+    const diff = nextTime - now;
+    if (diff <= 5*60*1000 && diff > 0) {
+      if (Notification.permission === "granted") {
         new Notification(`${nextEvent.name} starting in 5 minutes!`);
       }
       notifiedEvents.add(nextEvent.name);
     }
-    if(diff<=0 && notifiedEvents.has(nextEvent.name)) notifiedEvents.delete(nextEvent.name);
+    if (diff <= 0 && notifiedEvents.has(nextEvent.name)) {
+      notifiedEvents.delete(nextEvent.name);
+    }
   }
 }
+
+// Theme toggle
 const toggle=document.getElementById("day-night-toggle");
 toggle.addEventListener("click",()=>{
   document.body.classList.toggle("light");
   toggle.textContent=document.body.classList.contains("light")?"☀️":"🌙";
 });
+
+// Initial render
 renderEvents(document.getElementById("daily-events"),e=>e.dayAbbr.length===0);
 renderEvents(document.getElementById("weekly-events"),e=>e.dayAbbr.length>0);
 showCurrentlyActiveAndNext();
+
+// Refresh every minute
 setInterval(()=>{
   renderEvents(document.getElementById("daily-events"),e=>e.dayAbbr.length===0);
   renderEvents(document.getElementById("weekly-events"),e=>e.dayAbbr.length>0);
   showCurrentlyActiveAndNext();
 },60000);
-if(Notification.permission!=="granted" && Notification.permission!=="denied") Notification.requestPermission();
+
+// Ask for notification permission
+if(Notification.permission!=="granted" && Notification.permission!=="denied") {
+  Notification.requestPermission();
+}
 </script>
 </body>
 </html>
